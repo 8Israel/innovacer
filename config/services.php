@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'facturapi' => [
+        'key' => env('FACTURAPI_KEY'),
+    ],
+
 ];

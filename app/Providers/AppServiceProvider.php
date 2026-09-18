@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Actions\Facturapi\FacturapiGateway;
+use App\Actions\Facturapi\SdkFacturapiGateway;
 use Carbon\CarbonImmutable;
+use Facturapi\Facturapi;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -15,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Facturapi::class, fn () => new Facturapi(config('services.facturapi.key')));
+
+        $this->app->bind(FacturapiGateway::class, SdkFacturapiGateway::class);
     }
 
     /**

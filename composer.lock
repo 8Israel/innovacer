@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c892d5d289ab6ad60404f0e6ba800167",
+    "content-hash": "fb37579c83d63cfeb8da9e1b5720265b",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -664,6 +664,60 @@
                 }
             ],
             "time": "2025-03-06T22:45:56+00:00"
+        },
+        {
+            "name": "facturapi/facturapi-php",
+            "version": "3.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/FacturAPI/facturapi-php.git",
+                "reference": "2af6b04ea19da376f86b4e9cc77c0bf50ea9e85e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/FacturAPI/facturapi-php/zipball/2af6b04ea19da376f86b4e9cc77c0bf50ea9e85e",
+                "reference": "2af6b04ea19da376f86b4e9cc77c0bf50ea9e85e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~2.0",
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "/src"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jhonatan Laguna",
+                    "email": "hola@jhonatanlaguna.com",
+                    "homepage": "http://jhonatanlaguna.com"
+                }
+            ],
+            "description": "Facturapi's PHP client library",
+            "homepage": "https://www.facturapi.io/",
+            "keywords": [
+                "api",
+                "cfdi",
+                "factura",
+                "facturapi",
+                "mexico",
+                "sat"
+            ],
+            "support": {
+                "issues": "https://github.com/FacturAPI/facturapi-php/issues",
+                "source": "https://github.com/FacturAPI/facturapi-php/tree/3.7.0"
+            },
+            "time": "2026-03-28T16:55:52+00:00"
         },
         {
             "name": "fruitcake/php-cors",
