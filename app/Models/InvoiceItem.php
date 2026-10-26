@@ -18,11 +18,13 @@ use Illuminate\Support\Carbon;
  * @property string $tax_rate
  * @property string $subtotal
  * @property string $tax_amount
+ * @property string $ieps_rate
+ * @property string $ieps_amount
  * @property string $total
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['invoice_id', 'product_id', 'quantity', 'unit_price', 'tax_rate', 'subtotal', 'tax_amount', 'total'])]
+#[Fillable(['invoice_id', 'product_id', 'quantity', 'unit_price', 'tax_rate', 'subtotal', 'tax_amount', 'ieps_rate', 'ieps_amount', 'total'])]
 class InvoiceItem extends Model
 {
     /** @use HasFactory<InvoiceItemFactory> */
@@ -36,6 +38,8 @@ class InvoiceItem extends Model
             'tax_rate' => 'decimal:4',
             'subtotal' => 'decimal:2',
             'tax_amount' => 'decimal:2',
+            'ieps_rate' => 'decimal:4',
+            'ieps_amount' => 'decimal:2',
             'total' => 'decimal:2',
         ];
     }
