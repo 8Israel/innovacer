@@ -349,19 +349,19 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 
 ### sales
 
-**Ventas.** Cada venta. Lo que no cubren sus pagos queda a crédito del cliente (RF-18).
+**Ventas.** Cada venta. Lo que no cubren sus pagos queda a crédito del cliente (RF-18). Una venta se puede dejar pendiente ("Dejar pendiente") y retomarse después: mientras está pendiente no tiene folio, fecha de venta, pagos ni operación de inventario, y no mueve existencias. Al cobrarla se recalculan precios con los vigentes, se descuenta la existencia y se le asigna folio.
 
 | Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
 |---|---|---|---|---|---|---|
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `cash_session_id` | Sesión de caja | `bigint unsigned` | Sí | — | Relación → `cash_sessions.id` (al borrar: restringir) | Sesión de caja en la que se registró (en ventas: en la que se completó). Vacío si no pasó por la caja. |
-| `folio` | Folio | `varchar(255)` | No | — | Único | Número de venta. No se puede repetir. |
+| `folio` | Folio | `varchar(255)` | Sí | — | Único | Número de venta consecutivo (V-000001). Se asigna al cobrar; vacío mientras está pendiente. No se puede repetir. |
 | `customer_id` | Cliente | `bigint unsigned` | Sí | — | Relación → `customers.id` (al borrar: restringir) | Cliente. Vacío = venta de mostrador a público en general. |
 | `customer_destination_id` | Destino | `bigint unsigned` | Sí | — | Relación → `customer_destinations.id` (al borrar: restringir) | Destino o cuenta del cliente a la que va la venta. |
 | `warehouse_id` | Almacén | `bigint unsigned` | No | — | Relación → `warehouses.id` (al borrar: restringir) | Almacén de donde sale la mercancía. |
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró la venta (y autorizó el descuento, si hubo). |
 | `inventory_operation_id` | Operación de inventario | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Salida de inventario que generó la venta. |
-| `status` | Estado | `varchar(255)` | No | `completed` | — | Valores: `completed` (completada), `canceled` (cancelada). |
+| `status` | Estado | `varchar(255)` | No | `completed` | — | Valores: `pending` (pendiente de cobrar), `completed` (completada), `canceled` (cancelada). |
 | `discount_rate` | Descuento de la venta | `decimal(5,4)` | No | `0.0000` | — | Descuento extra autorizado para esta venta, como fracción: 0.0500 = 5 %. |
 | `subtotal` | Subtotal | `decimal(12,2)` | No | `0.00` | — | Suma de partidas antes de descuentos e impuestos. |
 | `discount_total` | Total de descuento | `decimal(12,2)` | No | `0.00` | — | Monto total descontado. |
@@ -369,7 +369,9 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `ieps_total` | Total de IEPS | `decimal(12,2)` | No | `0.00` | — | IEPS de toda la venta. |
 | `total` | Total | `decimal(12,2)` | No | `0.00` | — | Importe final a pagar. |
 | `notes` | Observaciones | `text` | Sí | — | — | Observaciones de la venta. |
-| `sold_at` | Fecha de venta | `timestamp` | No | — | — | Cuándo se hizo la venta. |
+| `sold_at` | Fecha de venta | `timestamp` | Sí | — | — | Cuándo se cobró la venta. Vacío mientras está pendiente. |
+| `held_at` | Dejada pendiente el | `timestamp` | Sí | — | — | Cuándo se dejó pendiente, si se dejó. |
+| `hold_note` | Nota de pendiente | `varchar(255)` | Sí | — | — | Por qué se dejó pendiente (p. ej. "Regresa por él en la tarde"). |
 | `canceled_at` | Cancelada el | `timestamp` | Sí | — | — | Cuándo se canceló, si aplica. |
 | `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
 | `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
@@ -392,7 +394,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `unit_price` | Precio unitario | `decimal(12,2)` | No | — | — | Precio por unidad aplicado. |
 | `discount_rate` | Tasa de descuento | `decimal(5,4)` | No | `0.0000` | — | Descuento total aplicado a la partida, como fracción. |
 | `discount_amount` | Monto de descuento | `decimal(12,2)` | No | `0.00` | — | Dinero descontado en la partida. |
-| `subtotal` | Subtotal | `decimal(12,2)` | No | — | — | Importe de la partida antes de impuestos. |
+| `subtotal` | Subtotal | `decimal(12,2)` | No | — | — | Cantidad × precio unitario, antes de descuento e impuestos. |
 | `iva_rate` | Tasa de IVA | `decimal(5,4)` | No | — | — | IVA aplicado, como fracción. |
 | `iva_amount` | IVA | `decimal(12,2)` | No | — | — | Monto de IVA de la partida. |
 | `ieps_rate` | Tasa de IEPS | `decimal(5,4)` | No | `0.0000` | — | IEPS aplicado, como fracción. |

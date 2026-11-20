@@ -77,12 +77,14 @@ class CashSessionService
 
     /**
      * The open session that sales, customer payments and cash movements must use.
+     * Call it inside the caller's transaction: the session row stays locked so it
+     * cannot be closed while the money is being recorded.
      *
      * @throws ValidationException when the register is closed.
      */
     public function requireOpen(): CashSession
     {
-        return $this->current() ?? throw $this->registerClosedException();
+        return $this->openQuery()->lockForUpdate()->first() ?? throw $this->registerClosedException();
     }
 
     /**
@@ -106,7 +108,7 @@ class CashSessionService
         }
 
         return DB::transaction(function () use ($user, $type, $concept, $amount, $beneficiary, $reference, $note): CashMovement {
-            $session = $this->openQuery()->lockForUpdate()->first() ?? throw $this->registerClosedException();
+            $session = $this->requireOpen();
 
             return $session->cashMovements()->create([
                 'user_id' => $user->id,
@@ -161,7 +163,7 @@ class CashSessionService
         }
 
         return DB::transaction(function () use ($user, $countedCash, $cashLeft, $note): CashSession {
-            $session = $this->openQuery()->lockForUpdate()->first() ?? throw $this->registerClosedException();
+            $session = $this->requireOpen();
 
             $expectedCash = $this->expectedCash($session);
             $difference = bcsub($countedCash, $expectedCash, self::SCALE);

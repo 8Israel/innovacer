@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 /*
@@ -44,7 +45,10 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Expectation for toThrow(): a ValidationException with an error on the given field.
+ */
+function failsOn(string $field): Closure
 {
-    // ..
+    return fn (ValidationException $exception) => expect($exception->errors())->toHaveKey($field);
 }

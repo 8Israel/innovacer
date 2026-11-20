@@ -22,7 +22,7 @@ class SaleFactory extends Factory
     public function definition(): array
     {
         return [
-            'folio' => fake()->unique()->bothify('V-#####'),
+            'folio' => sprintf('V-%06d', fake()->unique()->numberBetween(1, 999999)),
             'customer_id' => Customer::factory(),
             'warehouse_id' => Warehouse::factory()->sellable(),
             'user_id' => User::factory(),
@@ -32,5 +32,18 @@ class SaleFactory extends Factory
             'total' => 1160,
             'sold_at' => now(),
         ];
+    }
+
+    /**
+     * Indicate that the sale was held to be charged later.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'folio' => null,
+            'status' => SaleStatus::Pending,
+            'sold_at' => null,
+            'held_at' => now(),
+        ]);
     }
 }

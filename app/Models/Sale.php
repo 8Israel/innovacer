@@ -13,10 +13,11 @@ use Illuminate\Support\Carbon;
 
 /**
  * A sale. Whatever is not covered by its payments is owed on credit.
+ * A pending sale has no folio, sale date, payments or inventory operation.
  *
  * @property int $id
  * @property int|null $cash_session_id
- * @property string $folio
+ * @property string|null $folio
  * @property int|null $customer_id
  * @property int|null $customer_destination_id
  * @property int $warehouse_id
@@ -30,12 +31,14 @@ use Illuminate\Support\Carbon;
  * @property string $ieps_total
  * @property string $total
  * @property string|null $notes
- * @property Carbon $sold_at
+ * @property Carbon|null $sold_at
+ * @property Carbon|null $held_at
+ * @property string|null $hold_note
  * @property Carbon|null $canceled_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['cash_session_id', 'folio', 'customer_id', 'customer_destination_id', 'warehouse_id', 'user_id', 'inventory_operation_id', 'status', 'discount_rate', 'subtotal', 'discount_total', 'tax_total', 'ieps_total', 'total', 'notes', 'sold_at', 'canceled_at'])]
+#[Fillable(['cash_session_id', 'folio', 'customer_id', 'customer_destination_id', 'warehouse_id', 'user_id', 'inventory_operation_id', 'status', 'discount_rate', 'subtotal', 'discount_total', 'tax_total', 'ieps_total', 'total', 'notes', 'sold_at', 'held_at', 'hold_note', 'canceled_at'])]
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
@@ -52,8 +55,14 @@ class Sale extends Model
             'ieps_total' => 'decimal:2',
             'total' => 'decimal:2',
             'sold_at' => 'datetime',
+            'held_at' => 'datetime',
             'canceled_at' => 'datetime',
         ];
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === SaleStatus::Pending;
     }
 
     public function customer(): BelongsTo

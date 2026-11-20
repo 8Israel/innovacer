@@ -14,15 +14,6 @@ use App\Models\SupplierPayment;
 use App\Models\User;
 use App\Services\CashSessionService;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Validation\ValidationException;
-
-/**
- * Expects a validation error on the given field.
- */
-function failsOn(string $field): Closure
-{
-    return fn (ValidationException $exception) => expect($exception->errors())->toHaveKey($field);
-}
 
 test('it opens the register with the opening cash', function () {
     $user = User::factory()->create();
