@@ -249,7 +249,7 @@ new #[Title('Inventario')] class extends Component {
                     @endphp
                     <flux:table.row :key="$product->id">
                         <flux:table.cell>
-                            <span class="font-medium">{{ $product->name }}</span>
+                            <flux:link :href="route('inventory.kardex', $product)" wire:navigate class="font-medium">{{ $product->name }}</flux:link>
                             <span class="block text-sm text-zinc-500">{{ $product->sku }}</span>
                         </flux:table.cell>
                         <flux:table.cell>{{ $product->supplier?->name ?? '—' }}</flux:table.cell>
