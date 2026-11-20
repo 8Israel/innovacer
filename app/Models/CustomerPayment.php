@@ -7,16 +7,17 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * A payment toward a customer's credit balance, optionally tied to a destination or a sale.
+ * A payment (abono) toward a customer's credit balance for one of their destinations,
+ * spread over that destination's sales through its allocations.
  *
  * @property int $id
  * @property int|null $cash_session_id
  * @property int $customer_id
  * @property int|null $customer_destination_id
- * @property int|null $sale_id
  * @property int $user_id
  * @property PaymentMethod $method
  * @property string $amount
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['cash_session_id', 'customer_id', 'customer_destination_id', 'sale_id', 'user_id', 'method', 'amount', 'reference', 'note', 'paid_at'])]
+#[Fillable(['cash_session_id', 'customer_id', 'customer_destination_id', 'user_id', 'method', 'amount', 'reference', 'note', 'paid_at'])]
 class CustomerPayment extends Model
 {
     /** @use HasFactory<CustomerPaymentFactory> */
@@ -51,9 +52,12 @@ class CustomerPayment extends Model
         return $this->belongsTo(CustomerDestination::class);
     }
 
-    public function sale(): BelongsTo
+    /**
+     * How the payment was spread over the customer's sales.
+     */
+    public function allocations(): HasMany
     {
-        return $this->belongsTo(Sale::class);
+        return $this->hasMany(CustomerPaymentAllocation::class);
     }
 
     public function user(): BelongsTo

@@ -1,6 +1,6 @@
 # Base de datos — Sistema de Inventario y Punto de Venta
 
-Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026.
+Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
 
 ## Cómo leer este documento
 
@@ -36,7 +36,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 - **Clientes:** [`customers`](#customers), [`customer_destinations`](#customer_destinations)
 - **Ventas:** [`sales`](#sales), [`sale_items`](#sale_items), [`sale_payments`](#sale_payments)
 - **Devoluciones:** [`customer_returns`](#customer_returns), [`customer_return_items`](#customer_return_items)
-- **Cobranza:** [`customer_payments`](#customer_payments)
+- **Cobranza:** [`customer_payments`](#customer_payments), [`customer_payment_allocations`](#customer_payment_allocations)
 - **Caja:** [`cash_movements`](#cash_movements), [`cash_sessions`](#cash_sessions)
 - **Proveedores:** [`supplier_payments`](#supplier_payments), [`supplier_payment_allocations`](#supplier_payment_allocations)
 - **Facturación:** [`invoices`](#invoices), [`invoice_items`](#invoice_items), [`invoice_sale`](#invoice_sale)
@@ -470,15 +470,14 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 
 ### customer_payments
 
-**Abonos de clientes.** Pagos que hace un cliente a su saldo de crédito, con forma de pago, referencia y nota. Se pueden ligar a un destino o a una venta (RF-27).
+**Abonos de clientes.** Pagos que hace un cliente a su saldo de crédito, con forma de pago, referencia y nota (RF-27). Se registran en la caja abierta y se aplican a una cuenta (destino): liquidan primero la venta más antigua con saldo de esa cuenta (o la que se elija) y lo que sobra pasa a la siguiente. El reparto queda en `customer_payment_allocations`. Un abono no puede ser mayor a lo que debe la cuenta.
 
 | Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
 |---|---|---|---|---|---|---|
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `cash_session_id` | Sesión de caja | `bigint unsigned` | Sí | — | Relación → `cash_sessions.id` (al borrar: restringir) | Sesión de caja en la que se registró (en ventas: en la que se completó). Vacío si no pasó por la caja. |
 | `customer_id` | Cliente | `bigint unsigned` | No | — | Relación → `customers.id` (al borrar: restringir) | Cliente que abona. |
-| `customer_destination_id` | Destino | `bigint unsigned` | Sí | — | Relación → `customer_destinations.id` (al borrar: restringir) | Destino al que se aplica el abono (opcional). |
-| `sale_id` | Venta | `bigint unsigned` | Sí | — | Relación → `sales.id` (al borrar: restringir) | Venta específica que se paga (opcional). |
+| `customer_destination_id` | Cuenta o destino | `bigint unsigned` | Sí | — | Relación → `customer_destinations.id` (al borrar: restringir) | Cuenta a la que se aplica el abono. Obligatoria si el cliente tiene cuentas; vacía si no tiene (se aplica a sus ventas sin destino). |
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró el abono. |
 | `method` | Forma de pago | `varchar(255)` | No | — | — | Valores: `cash` (efectivo), `card` (tarjeta), `transfer` (transferencia). |
 | `amount` | Monto | `decimal(12,2)` | No | — | — | Cuánto abonó. |
@@ -491,6 +490,23 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 **Índices combinados:**
 
 - `customer_id` + `paid_at` — Índice (para buscar más rápido)
+
+### customer_payment_allocations
+
+**Aplicación de abonos.** Cuánto de cada abono se aplicó a cada venta. Un abono de $5,000 puede liquidar una venta de $2,000 y abonar $3,000 a otra. Lo pendiente de una venta es su total menos sus pagos al cobrar, menos estas aplicaciones, menos las devoluciones abonadas a cuenta; el saldo de una cuenta y el del cliente son la suma de esos pendientes. Reemplaza al antiguo `customer_payments.sale_id`.
+
+| Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
+|---|---|---|---|---|---|---|
+| `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
+| `customer_payment_id` | Abono | `bigint unsigned` | No | — | Relación → `customer_payments.id` (al borrar: restringir) | Abono que se reparte. |
+| `sale_id` | Venta | `bigint unsigned` | No | — | Relación → `sales.id` (al borrar: restringir) | Venta a la que se aplica. |
+| `amount` | Monto | `decimal(12,2)` | No | — | — | Parte del abono aplicada a esa venta. Nunca mayor a lo que debía la venta. |
+| `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
+| `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
+
+**Índices combinados:**
+
+- `customer_payment_id` + `sale_id` — Único (no se puede repetir la combinación)
 
 ---
 

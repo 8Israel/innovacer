@@ -31,6 +31,7 @@ class CustomerReturnService
         private CashSessionService $cashSessions,
         private InventoryService $inventory,
         private FolioSequence $folios,
+        private CustomerBalanceService $balances,
     ) {}
 
     /**
@@ -76,6 +77,19 @@ class CustomerReturnService
 
             $lines = $this->refundLines($sale, $items);
             $refundTotal = array_reduce($lines, fn (string $carry, array $line) => bcadd($carry, $line[2], self::MONEY), '0');
+
+            if ($refundMethod === RefundMethod::AccountCredit) {
+                $pending = $this->balances->pending($sale);
+
+                if (bccomp($refundTotal, $pending, self::MONEY) === 1) {
+                    throw ValidationException::withMessages([
+                        'refund_method' => __('Esta venta solo debe $:pending; abonar $:refund a la cuenta dejaría saldo a favor. Devuelve la diferencia en efectivo.', [
+                            'pending' => $pending,
+                            'refund' => $refundTotal,
+                        ]),
+                    ]);
+                }
+            }
             $folio = $this->folios->next(CustomerReturn::class, 'D');
 
             $operation = null;

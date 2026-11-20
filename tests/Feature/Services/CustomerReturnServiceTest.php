@@ -12,15 +12,17 @@ use App\Models\Sale;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Services\CashSessionService;
+use App\Services\CustomerBalanceService;
 use App\Services\CustomerReturnService;
 use App\Services\SaleService;
 
 /**
- * Charges a cash sale of 6 Calcio 1 L at $185, paid in full ($999.00 with a 10 % customer discount).
+ * Charges a cash sale of 6 Calcio 1 L at $185 ($999.00 with a 10 % customer discount),
+ * paid in full unless a smaller cash payment is given.
  *
  * @return array{0: Sale, 1: Product, 2: Warehouse, 3: CashSession}
  */
-function soldCalcio(?Customer $customer = null): array
+function soldCalcio(?Customer $customer = null, ?string $paid = null): array
 {
     $session = CashSession::factory()->create(['opening_cash' => 1000]);
     $mostrador = Warehouse::factory()->sellable()->create(['name' => 'Mostrador Innovacer']);
@@ -28,7 +30,7 @@ function soldCalcio(?Customer $customer = null): array
     stockLot($calcio, $mostrador, '10', '2026-09-28');
     $service = app(SaleService::class);
     $sale = $service->hold(User::factory()->create(), $mostrador, [['product_id' => $calcio->id, 'quantity' => '6']], $customer);
-    $sale = $service->complete($sale, User::factory()->create(), [['method' => PaymentMethod::Cash, 'amount' => $sale->total]]);
+    $sale = $service->complete($sale, User::factory()->create(), [['method' => PaymentMethod::Cash, 'amount' => $paid ?? $sale->total]]);
 
     return [$sale, $calcio, $mostrador, $session];
 }
@@ -111,12 +113,21 @@ test('it refuses to credit the account of a walk-in sale', function () {
     expect(CustomerReturn::count())->toBe(0);
 });
 
-test('it credits the customer account without taking cash from the register', function () {
-    [$sale, , , $session] = soldCalcio(Customer::factory()->create(['discount_rate' => 0.10]));
+test('it credits a credit sale without taking cash from the register', function () {
+    [$sale, , , $session] = soldCalcio(Customer::factory()->withCredit()->create(['discount_rate' => 0.10]), paid: '500');
 
     $customerReturn = app(CustomerReturnService::class)->register(User::factory()->create(), $sale, [['sale_item_id' => $sale->items()->sole()->id, 'quantity' => '1']], RefundMethod::AccountCredit);
 
     expect($customerReturn->refund_method)->toBe(RefundMethod::AccountCredit);
     expect($customerReturn->refund_amount)->toBe('166.50');
-    expect(app(CashSessionService::class)->expectedCash($session))->toBe('1999.00');
+    expect(app(CustomerBalanceService::class)->pending($sale))->toBe('332.50');
+    expect(app(CashSessionService::class)->expectedCash($session))->toBe('1500.00');
+});
+
+test('it refuses to credit more than what the sale still owes', function () {
+    [$sale] = soldCalcio(Customer::factory()->withCredit()->create(['discount_rate' => 0.10]));
+
+    expect(fn () => app(CustomerReturnService::class)->register(User::factory()->create(), $sale, [['sale_item_id' => $sale->items()->sole()->id, 'quantity' => '1']], RefundMethod::AccountCredit))
+        ->toThrow(failsOn('refund_method'));
+    expect(CustomerReturn::count())->toBe(0);
 });

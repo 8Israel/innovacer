@@ -100,9 +100,12 @@ class Sale extends Model
         return $this->hasMany(SalePayment::class);
     }
 
-    public function customerPayments(): HasMany
+    /**
+     * Parts of customer payments (abonos) applied to this sale.
+     */
+    public function paymentAllocations(): HasMany
     {
-        return $this->hasMany(CustomerPayment::class);
+        return $this->hasMany(CustomerPaymentAllocation::class);
     }
 
     public function customerReturns(): HasMany
