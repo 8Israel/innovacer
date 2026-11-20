@@ -6,16 +6,22 @@ use App\Models\CustomerDestination;
 use App\Models\PaymentMethod;
 use App\Models\PriceType;
 use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleStatus;
 use App\Models\Stock;
 use App\Models\StockMinimum;
+use App\Models\User;
+use App\Models\UserRole;
 use App\Models\Warehouse;
 use App\Services\CashSessionService;
 use App\Services\CustomerBalanceService;
+use App\Services\SaleAuthorization;
 use App\Services\SaleService;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -52,6 +58,37 @@ new #[Title('Punto de venta')] class extends Component {
 
     /** @var array{folio: string, customer: string, total: string, change: string|null}|null */
     public ?array $registeredSale = null;
+
+    /** Extra discount for this sale, in percent; it needs an authorization. */
+    public string $extra_discount = '';
+
+    /**
+     * Mixed payment rows (docs/diseno/PagoMixto.html).
+     *
+     * @var list<array{method: string, amount: string, received_amount: string, reference: string}>
+     */
+    public array $split_payments = [];
+
+    public bool $leave_rest_on_credit = false;
+
+    // Authorization (docs/diseno/Autorizacion.html)
+    public ?int $authorizer_id = null;
+    public string $authorizer_password = '';
+    public string $authorization_note = '';
+    public ?string $authorization_needed_for = null;
+    public bool $authorization_owner_only = false;
+
+    /**
+     * Payments of the charge waiting for an authorization.
+     *
+     * @var list<array{method: string, amount: string, received_amount: string|null, reference: string|null}>
+     */
+    public array $charge_payments = [];
+
+    /** The pending sale loaded into the cart, replaced when it is charged or held again. */
+    public ?int $resuming_sale_id = null;
+
+    public string $hold_note = '';
 
     #[Computed]
     public function warehouse(): ?Warehouse
@@ -165,10 +202,64 @@ new #[Title('Punto de venta')] class extends Component {
         }
 
         try {
-            return app(SaleService::class)->quote($this->items(), $this->customer);
+            return app(SaleService::class)->quote($this->items(), $this->customer, $this->discountRate());
         } catch (ValidationException) {
             return null;
         }
+    }
+
+    /**
+     * Sales held to be resumed later (docs/diseno/VentasPendientes.html).
+     */
+    #[Computed]
+    public function pendingSales(): Collection
+    {
+        return Sale::query()
+            ->where('status', SaleStatus::Pending)
+            ->with('customer')
+            ->withCount('items')
+            ->latest('held_at')
+            ->get();
+    }
+
+    /**
+     * Users who may approve what this charge needs: anyone active for an extra
+     * discount, only owners for credit over the limit.
+     */
+    #[Computed]
+    public function authorizers(): Collection
+    {
+        return User::query()
+            ->where('is_active', true)
+            ->when($this->authorization_owner_only, fn (Builder $query) => $query->where('role', UserRole::Owner))
+            ->orderBy('name')
+            ->get(['id', 'name', 'role']);
+    }
+
+    /**
+     * Totals of the mixed payment rows: paid, missing and change.
+     *
+     * @return array{paid: string, missing: string, change: string}
+     */
+    #[Computed]
+    public function splitSummary(): array
+    {
+        $paid = '0.00';
+        $change = '0.00';
+
+        foreach ($this->split_payments as $row) {
+            $amount = is_numeric($row['amount']) ? bcadd($row['amount'], '0', 2) : '0.00';
+            $paid = bcadd($paid, $amount, 2);
+
+            if ($row['method'] === 'cash' && is_numeric($row['received_amount'])) {
+                $rowChange = bcsub(bcadd($row['received_amount'], '0', 2), $amount, 2);
+                $change = bccomp($rowChange, '0', 2) === 1 ? bcadd($change, $rowChange, 2) : $change;
+            }
+        }
+
+        $missing = bcsub($this->quote['total'] ?? '0', $paid, 2);
+
+        return ['paid' => $paid, 'missing' => bccomp($missing, '0', 2) > 0 ? $missing : '0.00', 'change' => $change];
     }
 
     #[Computed]
@@ -272,41 +363,300 @@ new #[Title('Punto de venta')] class extends Component {
         Flux::modal('new-destination')->close();
     }
 
-    public function charge(SaleService $sales): void
+    /**
+     * Charge with the single payment method chosen on screen.
+     */
+    public function charge(): void
     {
         $total = $this->quote['total'] ?? null;
 
-        if ($total === null || $this->warehouse === null) {
+        if ($total === null) {
             return;
         }
 
-        $sale = $sales->sell(
-            Auth::user(),
-            $this->warehouse,
-            $this->items(),
-            $this->payments($total),
-            $this->customer,
-            $this->customer_destination_id ? CustomerDestination::query()->findOrFail($this->customer_destination_id) : null,
-            notes: $this->notes ?: null,
+        $this->attemptCharge(match ($this->payment_method) {
+            'credit' => [],
+            'cash' => [['method' => 'cash', 'amount' => $total, 'received_amount' => $this->received_amount ?: null, 'reference' => null]],
+            default => [['method' => $this->payment_method, 'amount' => $total, 'received_amount' => null, 'reference' => $this->reference ?: null]],
+        });
+    }
+
+    public function openSplitPayment(): void
+    {
+        $this->split_payments = [['method' => 'cash', 'amount' => $this->quote['total'] ?? '', 'received_amount' => '', 'reference' => '']];
+        $this->leave_rest_on_credit = false;
+        $this->resetErrorBag();
+        Flux::modal('split-payment')->show();
+    }
+
+    public function addSplitRow(): void
+    {
+        $this->split_payments[] = ['method' => 'transfer', 'amount' => $this->splitSummary['missing'], 'received_amount' => '', 'reference' => ''];
+    }
+
+    public function removeSplitRow(int $index): void
+    {
+        unset($this->split_payments[$index]);
+        $this->split_payments = array_values($this->split_payments);
+    }
+
+    /**
+     * Charge with several payment methods; what they leave unpaid goes on credit
+     * only when that was chosen explicitly.
+     */
+    public function chargeSplit(): void
+    {
+        if (bccomp($this->splitSummary['missing'], '0', 2) === 1 && ! $this->leave_rest_on_credit) {
+            throw ValidationException::withMessages([
+                'payments' => __('Faltan :missing por cobrar. Agrega otra forma de pago o déjalo a crédito.', ['missing' => '$'.number_format((float) $this->splitSummary['missing'], 2)]),
+            ]);
+        }
+
+        $payments = collect($this->split_payments)
+            ->filter(fn (array $row) => is_numeric($row['amount']) && $row['amount'] > 0)
+            ->map(fn (array $row) => [
+                'method' => $row['method'],
+                'amount' => $row['amount'],
+                'received_amount' => $row['method'] === 'cash' && is_numeric($row['received_amount']) ? $row['received_amount'] : null,
+                'reference' => $row['method'] === 'cash' ? null : ($row['reference'] ?: null),
+            ])
+            ->values()
+            ->all();
+
+        Flux::modal('split-payment')->close();
+        $this->attemptCharge($payments);
+    }
+
+    /**
+     * Approve what the charge needed (extra discount or credit over the limit) and charge it.
+     */
+    public function authorizeCharge(): void
+    {
+        $this->validate(['authorizer_id' => ['required', 'integer']]);
+
+        $authorization = new SaleAuthorization(
+            User::query()->where('is_active', true)->findOrFail($this->authorizer_id),
+            $this->authorizer_password,
+            $this->authorization_note ?: null,
         );
 
-        $cashPayment = $sale->payments()->where('method', PaymentMethod::Cash)->first();
+        $this->reset('authorizer_password');
+        $this->attemptCharge($this->charge_payments, $authorization);
+    }
+
+    /**
+     * Save the cart as a pending sale to resume later; it does not touch stock or cash.
+     */
+    public function holdSale(SaleService $sales): void
+    {
+        if ($this->lines === [] || $this->warehouse === null) {
+            return;
+        }
+
+        DB::transaction(function () use ($sales): void {
+            $this->discardResumedSale($sales);
+
+            $sales->hold(
+                Auth::user(),
+                $this->warehouse,
+                $this->items(),
+                $this->customer,
+                $this->destination(),
+                $this->discountRate(),
+                $this->notes ?: null,
+                $this->hold_note ?: null,
+            );
+        });
+
+        Flux::modal('hold-sale')->close();
+        $this->newSale();
+        unset($this->pendingSales);
+        Flux::toast(variant: 'success', text: __('Venta guardada como pendiente.'));
+    }
+
+    /**
+     * Load a pending sale into the cart. It is replaced when charged or held again;
+     * prices and stock are checked again then.
+     */
+    public function resumeSale(int $saleId): void
+    {
+        $sale = Sale::query()->where('status', SaleStatus::Pending)->with('items')->findOrFail($saleId);
+
+        $this->newSale();
+        $this->resuming_sale_id = $sale->id;
+        $this->customer_id = $sale->customer_id;
+        $this->customer_destination_id = $sale->customer_destination_id;
+        $this->notes = (string) $sale->notes;
+        $this->extra_discount = bccomp($sale->discount_rate, '0', 4) === 1 ? rtrim(rtrim(bcmul($sale->discount_rate, '100', 2), '0'), '.') : '';
+        $this->hold_note = (string) $sale->hold_note;
+
+        foreach ($sale->items as $item) {
+            $this->lines[$item->product_id] = [
+                'product_id' => $item->product_id,
+                'quantity' => rtrim(rtrim($item->quantity, '0'), '.'),
+                'price_type' => $item->price_type->value,
+            ];
+        }
+
+        Flux::modal('pending-sales')->close();
+    }
+
+    public function discardPendingSale(int $saleId, SaleService $sales): void
+    {
+        $sales->discard(Sale::query()->findOrFail($saleId));
+
+        if ($this->resuming_sale_id === $saleId) {
+            $this->resuming_sale_id = null;
+        }
+
+        unset($this->pendingSales);
+    }
+
+    public function newSale(): void
+    {
+        $this->reset(
+            'search', 'lines', 'notes', 'customer_id', 'customer_destination_id', 'customer_search', 'payment_method',
+            'received_amount', 'reference', 'notice', 'extra_discount', 'split_payments', 'leave_rest_on_credit',
+            'charge_payments', 'authorizer_id', 'authorizer_password', 'authorization_note', 'authorization_needed_for',
+            'authorization_owner_only', 'resuming_sale_id', 'hold_note',
+        );
+        $this->resetErrorBag();
+    }
+
+    /**
+     * Ring up the cart, first asking for an authorization when the sale needs one.
+     *
+     * @param  list<array{method: string, amount: string, received_amount: string|null, reference: string|null}>  $payments
+     */
+    private function attemptCharge(array $payments, ?SaleAuthorization $authorization = null): void
+    {
+        if ($this->warehouse === null || $this->quote === null) {
+            return;
+        }
+
+        if ($authorization === null && ($neededFor = $this->authorizationNeededFor($payments)) !== null) {
+            $this->charge_payments = $payments;
+            $this->authorization_needed_for = $neededFor;
+            $this->authorization_owner_only = $this->isOverCreditLimit($payments);
+            $this->reset('authorizer_id', 'authorizer_password', 'authorization_note');
+            unset($this->authorizers);
+            Flux::modal('authorization')->show();
+
+            return;
+        }
+
+        $sales = app(SaleService::class);
+
+        $sale = DB::transaction(function () use ($sales, $payments, $authorization) {
+            $this->discardResumedSale($sales);
+
+            return $sales->sell(
+                Auth::user(),
+                $this->warehouse,
+                $this->items(),
+                $this->toPayments($payments),
+                $this->customer,
+                $this->destination(),
+                $this->discountRate(),
+                $this->notes ?: null,
+                $authorization,
+            );
+        });
 
         $this->registeredSale = [
             'folio' => $sale->folio,
             'customer' => collect([$this->customer?->name ?? __('Público en general'), $sale->customerDestination?->name])->filter()->join(' · '),
             'total' => $sale->total,
-            'change' => $cashPayment?->change_amount,
+            'change' => $this->decimalSum($sale->payments()->where('method', PaymentMethod::Cash)->sum('change_amount')),
         ];
 
+        Flux::modal('authorization')->close();
         $this->newSale();
+        unset($this->pendingSales);
         Flux::modal('sale-registered')->show();
     }
 
-    public function newSale(): void
+    /**
+     * Why this charge needs someone's approval, or null when it does not.
+     *
+     * @param  list<array{method: string, amount: string, received_amount: string|null, reference: string|null}>  $payments
+     */
+    private function authorizationNeededFor(array $payments): ?string
     {
-        $this->reset('search', 'lines', 'notes', 'customer_id', 'customer_destination_id', 'customer_search', 'payment_method', 'received_amount', 'reference', 'notice');
-        $this->resetErrorBag();
+        $reasons = [];
+
+        if (bccomp($this->discountRate(), '0', 4) === 1) {
+            $reasons[] = __('Descuento extra de :rate% en la venta', ['rate' => $this->extra_discount]);
+        }
+
+        if ($this->isOverCreditLimit($payments)) {
+            $reasons[] = __(':customer rebasa su límite de crédito', ['customer' => $this->customer->name]);
+        }
+
+        return $reasons === [] ? null : implode(' · ', $reasons);
+    }
+
+    /**
+     * Mirrors the sale's credit check, to ask for the owner's approval up front.
+     *
+     * @param  list<array{method: string, amount: string, received_amount: string|null, reference: string|null}>  $payments
+     */
+    private function isOverCreditLimit(array $payments): bool
+    {
+        if (! $this->customer?->hasCredit() || $this->customer->credit_limit === null) {
+            return false;
+        }
+
+        $paid = array_reduce($payments, fn (string $carry, array $payment) => bcadd($carry, $payment['amount'], 2), '0');
+        $onCredit = bcsub($this->quote['total'], $paid, 2);
+
+        if (bccomp($onCredit, '0', 2) <= 0) {
+            return false;
+        }
+
+        $balanceAfterSale = bcadd(app(CustomerBalanceService::class)->balance($this->customer), $onCredit, 2);
+
+        return bccomp($balanceAfterSale, $this->customer->credit_limit, 2) === 1;
+    }
+
+    private function discardResumedSale(SaleService $sales): void
+    {
+        $pending = $this->resuming_sale_id
+            ? Sale::query()->where('status', SaleStatus::Pending)->find($this->resuming_sale_id)
+            : null;
+
+        if ($pending !== null) {
+            $sales->discard($pending);
+        }
+    }
+
+    private function destination(): ?CustomerDestination
+    {
+        return $this->customer_destination_id ? CustomerDestination::query()->findOrFail($this->customer_destination_id) : null;
+    }
+
+    /**
+     * The extra discount as a fraction (5 → 0.0500).
+     */
+    private function discountRate(): string
+    {
+        return is_numeric($this->extra_discount) && $this->extra_discount > 0
+            ? bcdiv((string) $this->extra_discount, '100', 4)
+            : '0';
+    }
+
+    /**
+     * @param  list<array{method: string, amount: string, received_amount: string|null, reference: string|null}>  $payments
+     * @return list<array{method: PaymentMethod, amount: string, received_amount: string|null, reference: string|null}>
+     */
+    private function toPayments(array $payments): array
+    {
+        return array_map(fn (array $payment): array => [...$payment, 'method' => PaymentMethod::from($payment['method'])], $payments);
+    }
+
+    private function decimalSum(mixed $value): string
+    {
+        return number_format((float) $value, 2, '.', '');
     }
 
     /**
@@ -319,18 +669,6 @@ new #[Title('Punto de venta')] class extends Component {
             'quantity' => (string) $line['quantity'],
             'price_type' => PriceType::from($line['price_type']),
         ], $this->lines));
-    }
-
-    /**
-     * @return list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>
-     */
-    private function payments(string $total): array
-    {
-        return match ($this->payment_method) {
-            'credit' => [],
-            'cash' => [['method' => PaymentMethod::Cash, 'amount' => $total, 'received_amount' => $this->received_amount ?: null]],
-            default => [['method' => PaymentMethod::from($this->payment_method), 'amount' => $total, 'reference' => $this->reference ?: null]],
-        };
     }
 
     /**
@@ -362,15 +700,36 @@ new #[Title('Punto de venta')] class extends Component {
 <div class="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-3">
     {{-- Cart --}}
     <div class="flex flex-col gap-4 lg:col-span-2">
-        <div>
-            <flux:heading size="xl">{{ __('Nueva venta') }}</flux:heading>
-            <flux:text class="mt-1">
-                {{ now()->translatedFormat('D j M Y') }}
-                @if ($this->warehouse)
-                    · {{ __('Sale de :warehouse', ['warehouse' => $this->warehouse->name]) }}
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <flux:heading size="xl">{{ $resuming_sale_id ? __('Venta pendiente') : __('Nueva venta') }}</flux:heading>
+                <flux:text class="mt-1">
+                    {{ now()->translatedFormat('D j M Y') }}
+                    @if ($this->warehouse)
+                        · {{ __('Sale de :warehouse', ['warehouse' => $this->warehouse->name]) }}
+                    @endif
+                </flux:text>
+            </div>
+            <div class="flex gap-2">
+                @if ($lines !== [] || $resuming_sale_id)
+                    <flux:button size="sm" variant="ghost" icon="plus" wire:click="newSale">{{ __('Nueva venta') }}</flux:button>
                 @endif
-            </flux:text>
+                <flux:modal.trigger name="pending-sales">
+                    <flux:button size="sm" icon="clock" data-test="pending-sales-button">
+                        {{ __('Pendientes') }}
+                        @if ($this->pendingSales->isNotEmpty())
+                            <flux:badge size="sm" color="amber" class="ms-1">{{ $this->pendingSales->count() }}</flux:badge>
+                        @endif
+                    </flux:button>
+                </flux:modal.trigger>
+            </div>
         </div>
+
+        @if ($resuming_sale_id)
+            <flux:callout icon="arrow-path" :heading="__('Retomaste una venta pendiente')">
+                <flux:callout.text>{{ __('Al cobrar se revisan otra vez la existencia y los precios.') }}</flux:callout.text>
+            </flux:callout>
+        @endif
 
         @unless ($this->openSession)
             <flux:callout variant="warning" icon="lock-closed" :heading="__('La caja está cerrada')">
@@ -557,6 +916,15 @@ new #[Title('Punto de venta')] class extends Component {
                 @if (($this->quote['discount_total'] ?? '0') > 0)
                     <div class="flex justify-between"><dt>{{ __('Descuento') }}</dt><dd class="tabular-nums">−{{ $money($this->quote['discount_total']) }}</dd></div>
                 @endif
+                <div class="flex items-center justify-between gap-3">
+                    <dt>{{ __('Descuento extra') }}</dt>
+                    <dd class="w-28">
+                        <flux:input wire:model.live.debounce.400ms="extra_discount" type="number" step="0.5" min="0" max="99" size="sm" icon-trailing="percent-badge" :placeholder="__('0')" />
+                    </dd>
+                </div>
+                @if (is_numeric($extra_discount) && $extra_discount > 0)
+                    <flux:text size="sm">{{ __('Pide autorización al cobrar.') }}</flux:text>
+                @endif
                 <div class="flex justify-between"><dt>{{ __('IVA / IEPS según producto') }}</dt><dd class="tabular-nums">{{ $money(bcadd($this->quote['tax_total'] ?? '0', $this->quote['ieps_total'] ?? '0', 2)) }}</dd></div>
                 <div class="flex justify-between border-t border-line pt-2 text-lg font-semibold dark:border-zinc-700">
                     <dt>{{ __('Total') }}</dt>
@@ -601,6 +969,15 @@ new #[Title('Punto de venta')] class extends Component {
             >
                 {{ __('Cobrar') }} {{ $this->quote ? $money($this->quote['total']) : '' }}
             </flux:button>
+
+            <div class="grid grid-cols-2 gap-2">
+                <flux:button size="sm" wire:click="openSplitPayment" :disabled="! $this->quote || ! $this->openSession">
+                    {{ __('Pagar con varias formas') }}
+                </flux:button>
+                <flux:modal.trigger name="hold-sale">
+                    <flux:button size="sm" :disabled="! $this->quote">{{ __('Dejar pendiente') }}</flux:button>
+                </flux:modal.trigger>
+            </div>
         </flux:card>
     </div>
 
@@ -629,6 +1006,136 @@ new #[Title('Punto de venta')] class extends Component {
                 <flux:button type="submit" variant="primary">{{ __('Agregar') }}</flux:button>
             </div>
         </form>
+    </flux:modal>
+
+    {{-- docs/diseno/PagoMixto.html --}}
+    <flux:modal name="split-payment" class="md:w-[36rem]">
+        <form wire:submit="chargeSplit" class="flex flex-col gap-4">
+            <div>
+                <flux:heading size="lg">{{ __('Pagar con varias formas') }}</flux:heading>
+                <flux:text>{{ __('Total :total', ['total' => $money($this->quote['total'] ?? 0)]) }}</flux:text>
+            </div>
+
+            @foreach ($split_payments as $index => $row)
+                <div wire:key="split-{{ $index }}" class="grid grid-cols-12 items-end gap-2">
+                    <div class="col-span-4">
+                        <flux:select wire:model.live="split_payments.{{ $index }}.method" :label="__('Forma')" size="sm">
+                            <flux:select.option value="cash">{{ __('Efectivo') }}</flux:select.option>
+                            <flux:select.option value="card">{{ __('Tarjeta') }}</flux:select.option>
+                            <flux:select.option value="transfer">{{ __('Transferencia') }}</flux:select.option>
+                        </flux:select>
+                    </div>
+                    <div class="col-span-3">
+                        <flux:input wire:model.live.debounce.300ms="split_payments.{{ $index }}.amount" :label="__('Monto')" type="number" step="0.01" min="0" size="sm" />
+                    </div>
+                    <div class="col-span-4">
+                        @if ($row['method'] === 'cash')
+                            <flux:input wire:model.live.debounce.300ms="split_payments.{{ $index }}.received_amount" :label="__('Recibido')" type="number" step="0.01" min="0" size="sm" />
+                        @else
+                            <flux:input wire:model="split_payments.{{ $index }}.reference" :label="__('Referencia')" size="sm" />
+                        @endif
+                    </div>
+                    <div class="col-span-1">
+                        @if (count($split_payments) > 1)
+                            <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="removeSplitRow({{ $index }})" :aria-label="__('Quitar')" />
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+
+            <div>
+                <flux:button size="sm" variant="ghost" icon="plus" wire:click="addSplitRow">{{ __('Agregar otra forma') }}</flux:button>
+            </div>
+
+            @if ($this->customer?->hasCredit())
+                <flux:checkbox wire:model.live="leave_rest_on_credit" :label="__('Dejar lo que falte a crédito en su cuenta')" />
+            @endif
+
+            <dl class="grid grid-cols-3 gap-2 text-center">
+                <div><dt class="text-sm">{{ __('Pagado') }}</dt><dd class="font-semibold tabular-nums">{{ $money($this->splitSummary['paid']) }}</dd></div>
+                <div><dt class="text-sm">{{ __('Falta') }}</dt><dd class="font-semibold tabular-nums">{{ $money($this->splitSummary['missing']) }}</dd></div>
+                <div><dt class="text-sm">{{ __('Cambio') }}</dt><dd class="font-semibold tabular-nums">{{ $money($this->splitSummary['change']) }}</dd></div>
+            </dl>
+
+            <flux:error name="payments" />
+
+            <div class="flex justify-end gap-2">
+                <flux:modal.close><flux:button variant="ghost">{{ __('Cancelar') }}</flux:button></flux:modal.close>
+                <flux:button type="submit" variant="primary" data-test="split-charge-button">{{ __('Cobrar') }}</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    {{-- docs/diseno/Autorizacion.html --}}
+    <flux:modal name="authorization" class="md:w-[28rem]">
+        <form wire:submit="authorizeCharge" class="flex flex-col gap-4">
+            <div>
+                <flux:heading size="lg">{{ $authorization_owner_only ? __('Necesita autorización del dueño') : __('Necesita autorización') }}</flux:heading>
+                <flux:text>{{ $authorization_needed_for }}</flux:text>
+            </div>
+
+            <flux:select wire:model="authorizer_id" :label="__('Usuario que autoriza')" :placeholder="__('Elige…')">
+                @foreach ($this->authorizers as $authorizer)
+                    <flux:select.option :value="$authorizer->id">{{ $authorizer->name }} · {{ $authorizer->role->label() }}</flux:select.option>
+                @endforeach
+            </flux:select>
+            <flux:input wire:model="authorizer_password" :label="__('Contraseña')" type="password" autocomplete="off" viewable />
+            <flux:input wire:model="authorization_note" :label="__('Motivo')" />
+            <flux:text size="sm">{{ __('Queda registrado en la venta quién lo autorizó y por qué.') }}</flux:text>
+
+            <flux:error name="authorization" />
+            <flux:error name="authorizer_id" />
+
+            <div class="flex justify-end gap-2">
+                <flux:modal.close><flux:button variant="ghost">{{ __('Cancelar') }}</flux:button></flux:modal.close>
+                <flux:button type="submit" variant="primary" data-test="authorize-button">{{ __('Autorizar') }}</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    <flux:modal name="hold-sale" class="md:w-96">
+        <form wire:submit="holdSale" class="flex flex-col gap-4">
+            <flux:heading size="lg">{{ __('Dejar pendiente') }}</flux:heading>
+            <flux:text>{{ __('No descuenta inventario ni entra a la caja hasta que se cobre.') }}</flux:text>
+            <flux:input wire:model="hold_note" :label="__('Nota')" :placeholder="__('Ej. Viene por ellas a las 4')" />
+            <div class="flex justify-end gap-2">
+                <flux:modal.close><flux:button variant="ghost">{{ __('Cancelar') }}</flux:button></flux:modal.close>
+                <flux:button type="submit" variant="primary" data-test="hold-sale-button">{{ __('Guardar pendiente') }}</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    {{-- docs/diseno/VentasPendientes.html --}}
+    <flux:modal name="pending-sales" class="md:w-[36rem]">
+        <div class="flex flex-col gap-4">
+            <div>
+                <flux:heading size="lg">{{ __('Ventas pendientes') }}</flux:heading>
+                <flux:text>{{ __('No descuentan inventario hasta que se cobran.') }}</flux:text>
+            </div>
+
+            @forelse ($this->pendingSales as $pending)
+                <div wire:key="pending-{{ $pending->id }}" class="flex items-center justify-between gap-3 rounded-lg border border-line p-3 dark:border-zinc-700">
+                    <div>
+                        <flux:text class="font-medium text-ink dark:text-white">{{ $pending->customer?->name ?? __('Público en general') }}</flux:text>
+                        <flux:text size="sm">
+                            {{ trans_choice(':count producto|:count productos', $pending->items_count) }} · {{ $pending->held_at?->diffForHumans() }}
+                            @if ($pending->hold_note)
+                                · "{{ $pending->hold_note }}"
+                            @endif
+                        </flux:text>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold tabular-nums">{{ $money($pending->total) }}</span>
+                        <flux:button size="sm" variant="primary" wire:click="resumeSale({{ $pending->id }})">{{ __('Retomar') }}</flux:button>
+                        <flux:button size="sm" variant="ghost" icon="trash" wire:click="discardPendingSale({{ $pending->id }})" wire:confirm="{{ __('¿Descartar esta venta pendiente?') }}" :aria-label="__('Descartar')" />
+                    </div>
+                </div>
+            @empty
+                <flux:text>{{ __('No hay ventas pendientes.') }}</flux:text>
+            @endforelse
+
+            <flux:text size="sm">{{ __('Al retomar, el sistema revisa otra vez la existencia y los precios, por si cambiaron.') }}</flux:text>
+        </div>
     </flux:modal>
 
     {{-- docs/diseno/VentaRegistrada.html --}}
