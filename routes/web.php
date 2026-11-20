@@ -20,6 +20,9 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
 
     Route::middleware('permission:manage_inventory')->group(function () {
         Route::livewire('inventario', 'pages::inventory.index')->name('inventory.index');
+        Route::livewire('inventario/entrada', 'pages::inventory.entry')->name('inventory.entry');
+        Route::livewire('inventario/traspaso', 'pages::inventory.transfer')->name('inventory.transfer');
+        Route::livewire('inventario/prestamos', 'pages::inventory.loans')->name('inventory.loans');
     });
 
     Route::livewire('products', 'pages::products')->name('products.index');
