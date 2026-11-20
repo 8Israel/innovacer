@@ -21,7 +21,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $customer_id
  * @property int|null $customer_destination_id
  * @property int $warehouse_id
- * @property int $user_id
+ * @property int $user_id Who charged the sale.
+ * @property int|null $authorized_by_id Who approved its extra discount or credit over the limit.
+ * @property string|null $authorization_reason
  * @property int|null $inventory_operation_id
  * @property SaleStatus $status
  * @property string $discount_rate
@@ -35,10 +37,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $held_at
  * @property string|null $hold_note
  * @property Carbon|null $canceled_at
+ * @property int|null $canceled_by_id The owner who approved the cancellation.
+ * @property string|null $cancel_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['cash_session_id', 'folio', 'customer_id', 'customer_destination_id', 'warehouse_id', 'user_id', 'inventory_operation_id', 'status', 'discount_rate', 'subtotal', 'discount_total', 'tax_total', 'ieps_total', 'total', 'notes', 'sold_at', 'held_at', 'hold_note', 'canceled_at'])]
+#[Fillable(['cash_session_id', 'folio', 'customer_id', 'customer_destination_id', 'warehouse_id', 'user_id', 'authorized_by_id', 'authorization_reason', 'inventory_operation_id', 'status', 'discount_rate', 'subtotal', 'discount_total', 'tax_total', 'ieps_total', 'total', 'notes', 'sold_at', 'held_at', 'hold_note', 'canceled_at', 'canceled_by_id', 'cancel_reason'])]
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
@@ -78,6 +82,16 @@ class Sale extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function authorizedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'authorized_by_id');
+    }
+
+    public function canceledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'canceled_by_id');
     }
 
     public function user(): BelongsTo

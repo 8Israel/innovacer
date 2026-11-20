@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Concerns\RoundsDecimals;
+use App\Models\CashMovementType;
 use App\Models\Customer;
 use App\Models\CustomerDestination;
 use App\Models\InventoryOperation;
 use App\Models\InventoryOperationType;
+use App\Models\InvoiceStatus;
 use App\Models\PaymentMethod;
 use App\Models\PriceType;
 use App\Models\Product;
@@ -100,11 +102,11 @@ class SaleService
      *
      * @param  list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>  $payments
      */
-    public function complete(Sale $sale, User $user, array $payments): Sale
+    public function complete(Sale $sale, User $user, array $payments, ?SaleAuthorization $authorization = null): Sale
     {
         $payments = $this->validatePayments($payments);
 
-        return DB::transaction(function () use ($sale, $user, $payments): Sale {
+        return DB::transaction(function () use ($sale, $user, $payments, $authorization): Sale {
             $sale = Sale::query()->lockForUpdate()->findOrFail($sale->id);
 
             if (! $sale->isPending()) {
@@ -125,7 +127,8 @@ class SaleService
             }
 
             $this->refreshTotals($sale);
-            $this->ensurePaymentsFit($sale, $payments);
+            $overLimitMessage = $this->ensurePaymentsFit($sale, $payments);
+            $authorizer = $this->authorize($sale, $authorization, $overLimitMessage);
 
             $operation = InventoryOperation::create([
                 'type' => InventoryOperationType::Sale,
@@ -149,8 +152,76 @@ class SaleService
                 'status' => SaleStatus::Completed,
                 'sold_at' => now(),
                 'user_id' => $user->id,
+                'authorized_by_id' => $authorizer?->id,
+                'authorization_reason' => $authorizer ? $authorization->reason : null,
                 'cash_session_id' => $session->id,
                 'inventory_operation_id' => $operation->id,
+            ]);
+
+            return $sale;
+        });
+    }
+
+    /**
+     * Cancel a charged sale with the owner's approval: the product goes back to the
+     * lots and warehouse it left, the cash paid leaves the open register, and the sale
+     * stays in the history as cancelled. Card and transfer payments are refunded
+     * outside the register. Invoiced sales, and sales with customer payments or
+     * returns, cannot be cancelled.
+     */
+    public function cancel(Sale $sale, SaleAuthorization $ownerAuthorization): Sale
+    {
+        $owner = $ownerAuthorization->verify(ownerOnly: true, action: __('cancelar ventas'));
+
+        return DB::transaction(function () use ($sale, $owner, $ownerAuthorization): Sale {
+            $sale = Sale::query()->with(['items.product', 'warehouse', 'customer'])->lockForUpdate()->findOrFail($sale->id);
+
+            if ($sale->status !== SaleStatus::Completed) {
+                throw ValidationException::withMessages(['sale' => __('Solo se pueden cancelar ventas cobradas.')]);
+            }
+
+            if ($sale->invoices()->where('status', InvoiceStatus::Stamped)->exists()) {
+                throw ValidationException::withMessages(['sale' => __('La venta :folio está facturada: primero cancela la factura.', ['folio' => $sale->folio])]);
+            }
+
+            if ($sale->paymentAllocations()->exists() || $sale->customerReturns()->exists()) {
+                throw ValidationException::withMessages([
+                    'sale' => __('La venta :folio ya tiene abonos o devoluciones; corrígela con una devolución.', ['folio' => $sale->folio]),
+                ]);
+            }
+
+            $cashPaid = $this->decimal($sale->payments()->where('method', PaymentMethod::Cash)->sum('amount'), self::MONEY);
+
+            if (bccomp($cashPaid, '0', self::MONEY) === 1) {
+                $this->cashSessions->recordMovement(
+                    $owner,
+                    CashMovementType::Outflow,
+                    __('Cancelación de la venta :folio', ['folio' => $sale->folio]),
+                    $cashPaid,
+                    $sale->customer?->name ?? __('Público en general'),
+                    $sale->folio,
+                    $ownerAuthorization->reason,
+                );
+            }
+
+            $operation = InventoryOperation::create([
+                'type' => InventoryOperationType::Reversal,
+                'user_id' => $owner->id,
+                'reversal_of_id' => $sale->inventory_operation_id,
+                'reference' => $sale->folio,
+                'note' => $ownerAuthorization->reason,
+                'occurred_at' => now(),
+            ]);
+
+            foreach ($sale->items as $item) {
+                $this->inventory->restockReturn($operation, $item, $item->quantity, $sale->warehouse);
+            }
+
+            $sale->update([
+                'status' => SaleStatus::Canceled,
+                'canceled_at' => now(),
+                'canceled_by_id' => $owner->id,
+                'cancel_reason' => $ownerAuthorization->reason,
             ]);
 
             return $sale;
@@ -247,12 +318,14 @@ class SaleService
 
     /**
      * Payments may not exceed the total. What they leave unpaid goes on credit, which
-     * needs a customer with credit enabled whose balance stays within their limit.
-     * The customer row is locked so two credit sales cannot both slip under the limit.
+     * needs a customer with credit enabled. The customer row is locked so two credit
+     * sales cannot both slip under the limit.
      *
      * @param  list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>  $payments
+     * @return string|null why the sale needs the owner's approval for going over the
+     *                     credit limit, or null when it stays within it.
      */
-    private function ensurePaymentsFit(Sale $sale, array $payments): void
+    private function ensurePaymentsFit(Sale $sale, array $payments): ?string
     {
         $paid = array_reduce($payments, fn (string $carry, array $payment) => bcadd($carry, $payment['amount'], self::MONEY), '0');
 
@@ -265,7 +338,7 @@ class SaleService
         $onCredit = bcsub($sale->total, $paid, self::MONEY);
 
         if (bccomp($onCredit, '0', self::MONEY) === 0) {
-            return;
+            return null;
         }
 
         $customer = $sale->customer_id === null ? null : Customer::query()->lockForUpdate()->find($sale->customer_id);
@@ -286,20 +359,46 @@ class SaleService
         }
 
         if ($customer->credit_limit === null) {
-            return;
+            return null;
         }
 
         $balanceAfterSale = bcadd($this->balances->balance($customer), $onCredit, self::MONEY);
 
-        if (bccomp($balanceAfterSale, $customer->credit_limit, self::MONEY) === 1) {
-            throw ValidationException::withMessages([
-                'payments' => __('Con esta venta :customer debería $:balance y su límite es $:limit. Se necesita autorización del dueño.', [
-                    'customer' => $customer->name,
-                    'balance' => $balanceAfterSale,
-                    'limit' => $customer->credit_limit,
-                ]),
-            ]);
+        if (bccomp($balanceAfterSale, $customer->credit_limit, self::MONEY) <= 0) {
+            return null;
         }
+
+        return __('Con esta venta :customer debería $:balance y su límite es $:limit. Se necesita autorización del dueño.', [
+            'customer' => $customer->name,
+            'balance' => $balanceAfterSale,
+            'limit' => $customer->credit_limit,
+        ]);
+    }
+
+    /**
+     * An extra discount on the sale needs the approval of the owner or the clerk;
+     * going over the credit limit needs the owner's. Both type their password.
+     *
+     * @return User|null who approved, or null when nothing needed approval.
+     */
+    private function authorize(Sale $sale, ?SaleAuthorization $authorization, ?string $overLimitMessage): ?User
+    {
+        $hasExtraDiscount = bccomp($sale->discount_rate, '0', self::RATE) === 1;
+
+        if (! $hasExtraDiscount && $overLimitMessage === null) {
+            return null;
+        }
+
+        if ($authorization === null) {
+            throw ValidationException::withMessages($overLimitMessage !== null
+                ? ['payments' => $overLimitMessage]
+                : ['authorization' => __('El descuento extra de la venta necesita autorización.')]);
+        }
+
+        return $authorization->verify(
+            ownerOnly: $overLimitMessage !== null,
+            action: __('que se rebase el límite de crédito'),
+        );
     }
 
     /**

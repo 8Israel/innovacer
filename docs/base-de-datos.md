@@ -361,7 +361,9 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `customer_id` | Cliente | `bigint unsigned` | Sí | — | Relación → `customers.id` (al borrar: restringir) | Cliente. Vacío = venta de mostrador a público en general. |
 | `customer_destination_id` | Destino | `bigint unsigned` | Sí | — | Relación → `customer_destinations.id` (al borrar: restringir) | Destino o cuenta del cliente a la que va la venta. |
 | `warehouse_id` | Almacén | `bigint unsigned` | No | — | Relación → `warehouses.id` (al borrar: restringir) | Almacén de donde sale la mercancía. |
-| `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró la venta (y autorizó el descuento, si hubo). |
+| `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién cobró la venta. |
+| `authorized_by_id` | Autorizada por | `bigint unsigned` | Sí | — | Relación → `users.id` (al borrar: restringir) | Quién autorizó, con su contraseña, el descuento extra (dueño o encargada) o que se rebase el límite de crédito (solo el dueño). |
+| `authorization_reason` | Motivo de la autorización | `varchar(255)` | Sí | — | — | Por qué se autorizó. |
 | `inventory_operation_id` | Operación de inventario | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Salida de inventario que generó la venta. |
 | `status` | Estado | `varchar(255)` | No | `completed` | — | Valores: `pending` (pendiente de cobrar), `completed` (completada), `canceled` (cancelada). |
 | `discount_rate` | Descuento de la venta | `decimal(5,4)` | No | `0.0000` | — | Descuento extra autorizado para esta venta, como fracción: 0.0500 = 5 %. |
@@ -374,7 +376,9 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `sold_at` | Fecha de venta | `timestamp` | Sí | — | — | Cuándo se cobró la venta. Vacío mientras está pendiente. |
 | `held_at` | Dejada pendiente el | `timestamp` | Sí | — | — | Cuándo se dejó pendiente, si se dejó. |
 | `hold_note` | Nota de pendiente | `varchar(255)` | Sí | — | — | Por qué se dejó pendiente (p. ej. "Regresa por él en la tarde"). |
-| `canceled_at` | Cancelada el | `timestamp` | Sí | — | — | Cuándo se canceló, si aplica. |
+| `canceled_at` | Cancelada el | `timestamp` | Sí | — | — | Cuándo se canceló, si aplica. Al cancelar, el producto regresa a sus lotes (operación de reversa) y el efectivo cobrado sale de la caja abierta. No se cancelan ventas facturadas ni con abonos o devoluciones. |
+| `canceled_by_id` | Cancelada por | `bigint unsigned` | Sí | — | Relación → `users.id` (al borrar: restringir) | Dueño que autorizó la cancelación con su contraseña. |
+| `cancel_reason` | Motivo de cancelación | `varchar(255)` | Sí | — | — | Por qué se canceló (p. ej. "El cliente se arrepintió", "Venta capturada por error", "Precio equivocado"). |
 | `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
 | `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
 

@@ -1,20 +1,26 @@
 <?php
 
+use App\Models\CashMovementType;
 use App\Models\CashSession;
 use App\Models\Customer;
 use App\Models\CustomerDestination;
 use App\Models\InventoryMovement;
 use App\Models\InventoryOperation;
 use App\Models\InventoryOperationType;
+use App\Models\Invoice;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use App\Models\SaleStatus;
+use App\Models\Stock;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Services\CashSessionService;
 use App\Services\CustomerBalanceService;
+use App\Services\CustomerPaymentService;
+use App\Services\SaleAuthorization;
 use App\Services\SaleService;
 
 /**
@@ -302,4 +308,164 @@ test('it refuses a destination of another customer', function () {
     expect(fn () => app(SaleService::class)->hold(User::factory()->create(), $warehouse, [['product_id' => $product->id, 'quantity' => '1']], $customer, $otherDestination))
         ->toThrow(failsOn('customer_destination_id'));
     expect(Sale::count())->toBe(0);
+});
+
+test('it requires an authorization for an extra discount', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
+    $stock = stockLot($product, $warehouse, '10', '2026-01-10');
+    $sale = holdSale($warehouse, $product, '1', discountRate: '0.05');
+
+    expect(fn () => app(SaleService::class)->complete($sale, User::factory()->create(), [cash('110.20')]))
+        ->toThrow(failsOn('authorization'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Pending);
+    expect($stock->fresh()->quantity)->toBe('10.000');
+});
+
+test('it records the clerk who authorized an extra discount', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
+    stockLot($product, $warehouse, '10', '2026-01-10');
+    $sale = holdSale($warehouse, $product, '1', discountRate: '0.05');
+    $clerk = User::factory()->create();
+
+    $completed = app(SaleService::class)->complete($sale, $clerk, [cash('110.20')], new SaleAuthorization($clerk, 'password', 'Cliente frecuente'));
+
+    expect($completed->only(['total', 'authorized_by_id', 'authorization_reason']))->toBe([
+        'total' => '110.20',
+        'authorized_by_id' => $clerk->id,
+        'authorization_reason' => 'Cliente frecuente',
+    ]);
+});
+
+test('it rejects an authorization without the right password or a reason', function (string $password, ?string $reason) {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
+    stockLot($product, $warehouse, '10', '2026-01-10');
+    $sale = holdSale($warehouse, $product, '1', discountRate: '0.05');
+    $owner = User::factory()->owner()->create();
+
+    expect(fn () => app(SaleService::class)->complete($sale, $owner, [cash('110.20')], new SaleAuthorization($owner, $password, $reason)))
+        ->toThrow(failsOn('authorization'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Pending);
+})->with([
+    'wrong password' => ['otra-cosa', 'Cliente frecuente'],
+    'without reason' => ['password', null],
+]);
+
+test('it lets the owner authorize a credit sale over the limit', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 48900, 'tax_rate' => 0, 'ieps_rate' => null]);
+    stockLot($product, $warehouse, '5', '2026-01-10');
+    $ernesto = Customer::factory()->withCredit('50000')->create(['discount_rate' => 0]);
+    Sale::factory()->for($ernesto)->create(['total' => 3200]);
+    $sale = holdSale($warehouse, $product, '1', $ernesto);
+    $owner = User::factory()->owner()->create();
+
+    $completed = app(SaleService::class)->complete($sale, User::factory()->create(), [], new SaleAuthorization($owner, 'password', 'Paga el viernes'));
+
+    expect($completed->status)->toBe(SaleStatus::Completed);
+    expect($completed->authorized_by_id)->toBe($owner->id);
+    expect(app(CustomerBalanceService::class)->balance($ernesto))->toBe('52100.00');
+});
+
+test('it forbids a clerk to authorize a credit sale over the limit', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 48900, 'tax_rate' => 0, 'ieps_rate' => null]);
+    $stock = stockLot($product, $warehouse, '5', '2026-01-10');
+    $ernesto = Customer::factory()->withCredit('50000')->create(['discount_rate' => 0]);
+    Sale::factory()->for($ernesto)->create(['total' => 3200]);
+    $sale = holdSale($warehouse, $product, '1', $ernesto);
+    $clerk = User::factory()->create();
+
+    expect(fn () => app(SaleService::class)->complete($sale, $clerk, [], new SaleAuthorization($clerk, 'password', 'Paga el viernes')))
+        ->toThrow(failsOn('authorization'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Pending);
+    expect($stock->fresh()->quantity)->toBe('5.000');
+});
+
+/**
+ * Sale #1043 from the design: 2 Ultra Nitrógeno 20 L at $1,250 paid with $2,500 in cash,
+ * taking one piece from each of two lots in Mostrador.
+ *
+ * @return array{sale: Sale, product: Product, mostrador: Warehouse, session: CashSession, olderStock: Stock, newerStock: Stock}
+ */
+function sale1043(): array
+{
+    $session = CashSession::factory()->create(['opening_cash' => 1000]);
+    $mostrador = Warehouse::factory()->sellable()->create(['name' => 'Mostrador Innovacer']);
+    $product = Product::factory()->create(['name' => 'Ultra Nitrógeno 20 L', 'unit_price' => 1250, 'tax_rate' => 0, 'ieps_rate' => null]);
+    $olderStock = stockLot($product, $mostrador, '1', '2026-09-01');
+    $newerStock = stockLot($product, $mostrador, '13', '2026-10-03');
+    $customer = Customer::factory()->create(['name' => 'Alejandro Carrasco', 'discount_rate' => 0]);
+    $sale = app(SaleService::class)->complete(holdSale($mostrador, $product, '2', $customer), User::factory()->create(), [cash('2500')]);
+
+    return compact('sale', 'product', 'mostrador', 'session', 'olderStock', 'newerStock');
+}
+
+test('it cancels sale 1043 returning the product to its lots and the cash from the register', function () {
+    ['sale' => $sale, 'product' => $product, 'mostrador' => $mostrador, 'session' => $session, 'olderStock' => $olderStock, 'newerStock' => $newerStock] = sale1043();
+    $owner = User::factory()->owner()->create();
+
+    $canceled = app(SaleService::class)->cancel($sale, new SaleAuthorization($owner, 'password', 'El cliente se arrepintió'));
+
+    expect($canceled->status)->toBe(SaleStatus::Canceled);
+    expect($canceled->canceled_at)->not->toBeNull();
+    expect($canceled->only(['canceled_by_id', 'cancel_reason']))->toBe(['canceled_by_id' => $owner->id, 'cancel_reason' => 'El cliente se arrepintió']);
+    expect(stockOf($product, $mostrador))->toBe('14.000');
+    expect($olderStock->fresh()->quantity)->toBe('1.000');
+    expect($newerStock->fresh()->quantity)->toBe('13.000');
+    $reversal = InventoryOperation::query()->where('type', InventoryOperationType::Reversal)->sole();
+    expect($reversal->reversal_of_id)->toBe($sale->inventory_operation_id);
+    expect($session->cashMovements()->sole()->only(['type', 'amount', 'beneficiary']))->toBe([
+        'type' => CashMovementType::Outflow,
+        'amount' => '2500.00',
+        'beneficiary' => 'Alejandro Carrasco',
+    ]);
+    expect(app(CashSessionService::class)->expectedCash($session))->toBe('1000.00');
+});
+
+test('it forbids a clerk to cancel a sale', function () {
+    ['sale' => $sale, 'product' => $product, 'mostrador' => $mostrador] = sale1043();
+    $clerk = User::factory()->create();
+
+    expect(fn () => app(SaleService::class)->cancel($sale, new SaleAuthorization($clerk, 'password', 'El cliente se arrepintió')))
+        ->toThrow(failsOn('authorization'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Completed);
+    expect(stockOf($product, $mostrador))->toBe('12.000');
+});
+
+test('it refuses to cancel an invoiced sale', function () {
+    ['sale' => $sale] = sale1043();
+    $sale->invoices()->attach(Invoice::factory()->stamped()->create());
+
+    expect(fn () => app(SaleService::class)->cancel($sale, new SaleAuthorization(User::factory()->owner()->create(), 'password', 'Precio equivocado')))
+        ->toThrow(failsOn('sale'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Completed);
+});
+
+test('it refuses to cancel a cash sale without an open register', function () {
+    ['sale' => $sale, 'product' => $product, 'mostrador' => $mostrador] = sale1043();
+    app(CashSessionService::class)->close(User::factory()->create(), '3500', '1000');
+
+    expect(fn () => app(SaleService::class)->cancel($sale, new SaleAuthorization(User::factory()->owner()->create(), 'password', 'Precio equivocado')))
+        ->toThrow(failsOn('cash_session'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Completed);
+    expect(stockOf($product, $mostrador))->toBe('12.000');
+});
+
+test('it refuses to cancel a sale that already has customer payments applied', function () {
+    CashSession::factory()->create();
+    $customer = Customer::factory()->withCredit()->create();
+    $sale = Sale::factory()->for($customer)->create(['total' => 1500]);
+    app(CustomerPaymentService::class)->register(User::factory()->create(), $customer, null, PaymentMethod::Cash, '500');
+
+    expect(fn () => app(SaleService::class)->cancel($sale, new SaleAuthorization(User::factory()->owner()->create(), 'password', 'Capturada por error')))
+        ->toThrow(failsOn('sale'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Completed);
 });
