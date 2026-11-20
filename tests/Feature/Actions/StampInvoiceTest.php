@@ -73,3 +73,26 @@ test('a failed stamping marks the invoice as failed with the error message', fun
     expect($result->error_message)->toBe('Invalid product_key');
     expect($result->facturapi_id)->toBeNull();
 });
+
+test('it fails without calling facturapi when a product has no sat key', function (array $missingKey) {
+    $customer = Customer::factory()->create(['facturapi_id' => 'cus_existing']);
+    $complete = Product::factory()->create(['name' => 'Bigfix 1 L']);
+    $incomplete = Product::factory()->create(['name' => 'Ultra Nitrógeno 20 L', ...$missingKey]);
+    $invoice = Invoice::factory()->create(['customer_id' => $customer->id]);
+    InvoiceItem::factory()->create(['invoice_id' => $invoice->id, 'product_id' => $complete->id]);
+    InvoiceItem::factory()->create(['invoice_id' => $invoice->id, 'product_id' => $incomplete->id]);
+
+    $this->mock(FacturapiGateway::class, function ($mock) {
+        $mock->shouldNotReceive('createCustomer');
+        $mock->shouldNotReceive('createInvoice');
+    });
+
+    $result = app(StampInvoice::class)->handle($invoice);
+
+    expect($result->status)->toBe(InvoiceStatus::Failed);
+    expect($result->error_message)->toBe('Falta la clave de producto o de unidad SAT de: Ultra Nitrógeno 20 L.');
+    expect($result->facturapi_id)->toBeNull();
+})->with([
+    'without product key' => [['product_key' => null]],
+    'without unit key' => [['unit_key' => null]],
+]);

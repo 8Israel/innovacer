@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Concerns\RoundsDecimals;
 use App\Models\Customer;
 use App\Models\CustomerDestination;
 use App\Models\InventoryOperation;
@@ -26,6 +27,8 @@ use Illuminate\Validation\ValidationException;
  */
 class SaleService
 {
+    use RoundsDecimals;
+
     private const MONEY = 2;
 
     private const RATE = 4;
@@ -35,6 +38,7 @@ class SaleService
     public function __construct(
         private CashSessionService $cashSessions,
         private InventoryService $inventory,
+        private FolioSequence $folios,
     ) {}
 
     /**
@@ -136,7 +140,7 @@ class SaleService
                 $sale->payments()->create([...$payment, 'cash_session_id' => $session->id]);
             }
 
-            $folio = $this->nextFolio();
+            $folio = $this->folios->next(Sale::class, 'V');
             $operation->update(['reference' => $folio]);
 
             $sale->update([
@@ -195,20 +199,20 @@ class SaleService
             ]);
         }
 
-        $discountRate = $this->round(
+        $discountRate = $this->roundHalfUp(
             bcsub('1', bcmul(bcsub('1', $customerRate, self::RATE), bcsub('1', $saleRate, self::RATE), 8), 8),
             self::RATE,
         );
 
-        $gross = $this->round(bcmul($quantity, $unitPrice, 8), self::MONEY);
-        $discountAmount = $this->round(bcmul($gross, $discountRate, 8), self::MONEY);
+        $gross = $this->roundHalfUp(bcmul($quantity, $unitPrice, 8), self::MONEY);
+        $discountAmount = $this->roundHalfUp(bcmul($gross, $discountRate, 8), self::MONEY);
         $net = bcsub($gross, $discountAmount, self::MONEY);
 
         $iepsRate = $product->ieps_rate ?? '0';
-        $ieps = $this->round(bcmul($net, $iepsRate, 8), self::MONEY);
+        $ieps = $this->roundHalfUp(bcmul($net, $iepsRate, 8), self::MONEY);
 
         $ivaRate = $product->tax_rate;
-        $iva = $this->round(bcmul(bcadd($net, $ieps, self::MONEY), $ivaRate, 8), self::MONEY);
+        $iva = $this->roundHalfUp(bcmul(bcadd($net, $ieps, self::MONEY), $ivaRate, 8), self::MONEY);
 
         return [
             'unit_price' => $unitPrice,
@@ -333,17 +337,6 @@ class SaleService
         }, array_values($items));
     }
 
-    /**
-     * Next consecutive folio (V-000001, V-000002…). Folios are only given to charged
-     * sales, so discarded pending sales leave no gaps.
-     */
-    private function nextFolio(): string
-    {
-        $lastFolio = Sale::query()->whereNotNull('folio')->orderByDesc('folio')->lockForUpdate()->value('folio');
-
-        return sprintf('V-%06d', $lastFolio === null ? 1 : ((int) substr($lastFolio, 2)) + 1);
-    }
-
     private function ensureSellable(Warehouse $warehouse): void
     {
         if (! $warehouse->is_sellable) {
@@ -374,17 +367,5 @@ class SaleService
         }
 
         return bcadd($rate, '0', self::RATE);
-    }
-
-    /**
-     * Round half up to the given scale (bcmath alone truncates).
-     */
-    private function round(string $value, int $scale): string
-    {
-        $half = '0.'.str_repeat('0', $scale).'5';
-
-        return bccomp($value, '0', $scale + 4) >= 0
-            ? bcadd($value, $half, $scale)
-            : bcsub($value, $half, $scale);
     }
 }

@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * A customer return; puts the product back in stock and issues a refund note.
+ * A customer return; issues a refund note and, unless the product is waste
+ * (restocked = false), puts it back in the lots it was sold from.
  *
  * @property int $id
  * @property int|null $cash_session_id
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property int $warehouse_id
  * @property int $user_id
  * @property int|null $inventory_operation_id
+ * @property bool $restocked
  * @property RefundMethod $refund_method
  * @property string $refund_amount
  * @property string|null $reference
@@ -29,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['cash_session_id', 'folio', 'sale_id', 'customer_id', 'warehouse_id', 'user_id', 'inventory_operation_id', 'refund_method', 'refund_amount', 'reference', 'reason', 'returned_at'])]
+#[Fillable(['cash_session_id', 'folio', 'sale_id', 'customer_id', 'warehouse_id', 'user_id', 'inventory_operation_id', 'restocked', 'refund_method', 'refund_amount', 'reference', 'reason', 'returned_at'])]
 class CustomerReturn extends Model
 {
     /** @use HasFactory<CustomerReturnFactory> */
@@ -38,6 +40,7 @@ class CustomerReturn extends Model
     protected function casts(): array
     {
         return [
+            'restocked' => 'boolean',
             'refund_method' => RefundMethod::class,
             'refund_amount' => 'decimal:2',
             'returned_at' => 'datetime',

@@ -5,6 +5,7 @@ namespace App\Actions\Facturapi;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceStatus;
+use App\Models\Product;
 use Facturapi\Exceptions\Facturapi_Exception;
 
 class StampInvoice
@@ -16,10 +17,28 @@ class StampInvoice
 
     /**
      * Send a draft invoice to Facturapi to be stamped (timbrada) by the SAT.
+     * Every product needs its SAT product and unit keys; otherwise the invoice
+     * is marked as failed without calling Facturapi.
      */
     public function handle(Invoice $invoice): Invoice
     {
         $invoice->loadMissing(['customer', 'items.product']);
+
+        $missingSatKeys = $invoice->items
+            ->map(fn (InvoiceItem $item) => $item->product)
+            ->filter(fn (Product $product) => blank($product->product_key) || blank($product->unit_key))
+            ->pluck('name')
+            ->unique();
+
+        if ($missingSatKeys->isNotEmpty()) {
+            $invoice->status = InvoiceStatus::Failed;
+            $invoice->error_message = __('Falta la clave de producto o de unidad SAT de: :products.', [
+                'products' => $missingSatKeys->join(', '),
+            ]);
+            $invoice->save();
+
+            return $invoice->fresh();
+        }
 
         try {
             $facturapiCustomerId = $this->syncCustomer->handle($invoice->customer);

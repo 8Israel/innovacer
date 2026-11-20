@@ -6,27 +6,15 @@ use App\Models\CustomerDestination;
 use App\Models\InventoryMovement;
 use App\Models\InventoryOperation;
 use App\Models\InventoryOperationType;
-use App\Models\Lot;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use App\Models\SaleStatus;
-use App\Models\Stock;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Services\SaleService;
-
-/**
- * Puts a lot of the product in the warehouse.
- */
-function stockLot(Product $product, Warehouse $warehouse, string $quantity, string $receivedAt): Stock
-{
-    $lot = Lot::factory()->for($product)->create(['quantity_received' => $quantity, 'received_at' => $receivedAt]);
-
-    return Stock::factory()->for($lot)->for($warehouse)->create(['product_id' => $product->id, 'quantity' => $quantity]);
-}
 
 /**
  * Holds a sale of one product; without a customer it is a walk-in sale.

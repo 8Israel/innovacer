@@ -210,7 +210,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró la operación. |
 | `supplier_id` | Proveedor | `bigint unsigned` | Sí | — | Relación → `suppliers.id` (al borrar: restringir) | Proveedor que entregó la mercancía (en entradas). |
 | `responsible` | Responsable | `varchar(255)` | Sí | — | — | Quién se llevó el producto en salidas (p. ej. "Ing. Meléndez"). |
-| `reason` | Motivo | `varchar(255)` | Sí | — | — | Motivo de salidas y ajustes (muestra, experimento, conteo físico…). |
+| `reason` | Motivo | `varchar(255)` | Sí | — | — | Motivo de salidas (texto libre: muestra, experimento…). En ajustes: `shortage` (faltante sin explicar), `damage` (merma o producto dañado), `capture_error` (error de captura anterior), `surplus` (sobrante). |
 | `note` | Nota | `text` | Sí | — | — | Nota libre. Obligatoria en traspasos (se valida en la aplicación). |
 | `reference` | Referencia | `varchar(255)` | Sí | — | — | Folio o documento relacionado (remisión del proveedor, etc.). |
 | `reversal_of_id` | Reversa de | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Si esta operación corrige otra, aquí va la operación original. |
@@ -286,7 +286,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 
 ### loan_entries
 
-**Movimientos de préstamo en especie.** Libreta de la deuda en producto con Francisco (y cualquier otro proveedor en especie): suma al tomar producto y resta al reponer. La deuda actual es la suma por prestamista y producto (RF-15).
+**Movimientos de préstamo en especie.** Libreta de la deuda en producto con Francisco (y cualquier otro proveedor en especie): suma al tomar producto y resta al reponer. Cada préstamo (renglón positivo) se repone con uno o más renglones negativos que apuntan a él, así se sabe cuánto falta de cada préstamo. La deuda actual es la suma por prestamista y producto (RF-15).
 
 | Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
 |---|---|---|---|---|---|---|
@@ -294,6 +294,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `lender_id` | Prestamista | `bigint unsigned` | No | — | Relación → `suppliers.id` (al borrar: restringir) | A quién se le debe (proveedor en especie). |
 | `product_id` | Producto | `bigint unsigned` | No | — | Relación → `products.id` (al borrar: restringir) | Producto prestado o repuesto. |
 | `inventory_operation_id` | Operación | `bigint unsigned` | No | — | Relación → `inventory_operations.id` (al borrar: restringir) | Traspaso que originó el movimiento. |
+| `repays_loan_entry_id` | Repone el préstamo | `bigint unsigned` | Sí | — | Relación → `loan_entries.id` (al borrar: restringir) | En una reposición, el préstamo que repone. Vacío en los préstamos. |
 | `quantity` | Cantidad | `decimal(12,3)` | No | — | — | Positiva = se tomó prestado, negativa = se repuso. |
 | `note` | Nota | `varchar(255)` | Sí | — | — | Observaciones. |
 | `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
@@ -426,7 +427,7 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 
 ### customer_returns
 
-**Devoluciones de clientes.** Devolución de producto de una venta. Regresa el producto al inventario y genera una nota de reembolso (RF-16).
+**Devoluciones de clientes.** Devolución de producto de una venta. Genera una nota de reembolso con folio (D-000001) y regresa el producto a los mismos lotes de los que salió, salvo que sea merma (RF-16). El reembolso es lo que el cliente pagó por esas piezas (con descuento e impuestos); en efectivo sale de la caja abierta.
 
 | Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
 |---|---|---|---|---|---|---|
@@ -437,7 +438,8 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `customer_id` | Cliente | `bigint unsigned` | Sí | — | Relación → `customers.id` (al borrar: restringir) | Cliente que devuelve. |
 | `warehouse_id` | Almacén | `bigint unsigned` | No | — | Relación → `warehouses.id` (al borrar: restringir) | Almacén al que regresa el producto. |
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró la devolución. |
-| `inventory_operation_id` | Operación de inventario | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Entrada de inventario que generó la devolución. |
+| `inventory_operation_id` | Operación de inventario | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Entrada de inventario que generó la devolución. Vacío si fue merma. |
+| `restocked` | Regresó al inventario | `tinyint(1)` | No | `1` | — | Sí = el producto volvió a los lotes de los que salió; No = merma (producto dañado), no regresa al inventario. |
 | `refund_method` | Forma de reembolso | `varchar(255)` | No | — | — | Valores: `cash` (efectivo), `card` (tarjeta), `transfer` (transferencia), `account_credit` (se abona al saldo del cliente en vez de devolver dinero). |
 | `refund_amount` | Monto reembolsado | `decimal(12,2)` | No | — | — | Total devuelto al cliente. |
 | `reference` | Referencia | `varchar(255)` | Sí | — | — | Referencia del reembolso. |

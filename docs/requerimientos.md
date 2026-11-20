@@ -133,7 +133,7 @@ Son 40 requerimientos en 10 módulos. La prioridad es una propuesta: Alta es lo 
 | RF-37 | Reportes | Reporte de existencias e inventario valorizado por almacén y dueño | Alta | S16 |
 | RF-38 | Reportes | Reporte de saldos de clientes y de proveedores | Alta | S16 |
 | RF-39 | Reportes | Reporte de utilidad (venta menos costo del lote) | Media | S16 |
-| RF-40 | Usuarios | Manejar usuarios con roles (dueño, encargada) y permisos fijos por rol; por ejemplo, solo el dueño autoriza descuentos y cambia precios | Alta | S15 |
+| RF-40 | Usuarios | Manejar usuarios con roles (dueño, encargada) y permisos fijos por rol. Autorizar descuentos y cambiar precios lo pueden hacer los dos (decidido el 19 nov 2026) | Alta | S15 |
 
 ## Requerimientos no funcionales
 

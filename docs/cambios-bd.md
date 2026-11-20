@@ -106,6 +106,29 @@ fondo inicial
 - Si al retomar ya no alcanza la existencia, lanza error y no cobra.
 - No se puede descartar una venta `completed`.
 
+## Tarea 2b · Inventario completo
+
+**Por qué:** hoy `InventoryService` solo sabe sacar existencias por PEPS para una venta. El diseño (`Entrada.html`, `Traspaso.html`, `Prestamos.html`, `AjusteConteo.html`, `Kardex.html`, `VentaDetalle.html`) necesita todas las operaciones de inventario.
+
+**Debe cubrir, siempre con kardex** (existencia anterior y resultante, usuario, nota) **y dentro de `DB::transaction()` con `lockForUpdate()`:**
+
+- **Entradas** con proveedor, almacén destino, referencia, fecha y varias partidas (producto, cantidad, costo). Cada partida crea un lote: en consigna el lote es del proveedor; comprado es propio.
+- **Traspasos** entre almacenes en una sola operación, con nota obligatoria. Mueven los mismos lotes (PEPS) sin cambiar de dueño.
+- **Salidas** que no son venta, con motivo y responsable.
+- **Ajustes por conteo** con motivo: faltante, merma, error de captura o sobrante.
+- **Préstamos y reposición** (consigna de Francisco): tomar producto de un almacén con prestamista genera la deuda en especie; la reposición se aplica a un préstamo concreto y puede ser parcial.
+- **Devoluciones de clientes:** regresan el producto a los lotes de los que salió (o se marcan como merma), generan nota de reembolso con folio y, si es en efectivo, salen de la caja abierta.
+- **Consulta del kardex** por producto, almacén y fechas.
+
+**Debe pasar (con los datos del diseño):**
+
+- Entrada de Biotexa en consigna: Ultra Nitrógeno 12 → 22 y se crea un lote de Biotexa.
+- Traspaso · préstamo de 5 Ultra Nitrógeno de Consigna Francisco a Mostrador: Consigna 30 → 25, Mostrador 9 → 14, y queda un préstamo de 5 por reponer.
+- Reposición de 2 Ultra Magnesio a un préstamo de 4 con 2 repuestos: el préstamo queda saldado.
+- Ajuste: el sistema dice 12, se cuentan 10 → movimiento −2 con motivo.
+- Devolución de 1 Calcio 1 L de una venta con 10 % de descuento a $185: entra 1 al kardex de Mostrador y salen $166.50 de caja.
+- Ninguna operación deja existencias negativas; si no alcanza, falla sin cambiar nada.
+
 ## Tarea 3 · Clientes de crédito
 
 **Por qué:** hoy cualquier cliente puede comprar a crédito, porque `credit_limit` vacío significa "sin límite".
@@ -170,8 +193,8 @@ fondo inicial
 
 **Reglas (servicio `SaleService`):**
 
-- **Descuento extra** (`sales.discount_rate > 0`): requiere `authorized_by_id` de un usuario con rol `owner`. Se valida su contraseña en el momento.
-- **Venta que rebasa el límite de crédito:** misma regla.
+- **Descuento extra** (`sales.discount_rate > 0`): requiere `authorized_by_id`. **Decidido el 19 nov 2026:** lo pueden autorizar el dueño o la encargada; se guarda quién lo autorizó.
+- **Venta que rebasa el límite de crédito:** requiere `authorized_by_id` de un usuario con rol `owner`. Se valida su contraseña en el momento.
 - **Cancelar:** requiere dueño y motivo, y hace lo siguiente:
   - Crea una operación de inventario tipo `reversal` que regresa el producto a los mismos lotes y almacén.
   - Si hubo pago en efectivo, registra la salida en la caja abierta.
@@ -181,7 +204,7 @@ fondo inicial
 **Debe pasar:**
 
 - Cancelar la venta #1043 (2 Ultra Nitrógeno, $2,500 en efectivo) regresa 2 piezas a Mostrador y saca $2,500 de caja.
-- Una encargada no puede cancelar ni autorizar.
+- Una encargada no puede cancelar ventas ni autorizar que se rebase el límite de crédito (descuentos sí).
 
 ## Tarea 6 · Usuarios y permisos
 
@@ -199,7 +222,7 @@ fondo inicial
 - Si `must_change_password = true`, después de entrar se le manda a cambiar contraseña antes de cualquier otra pantalla.
 - Un usuario con `is_active = false` no puede entrar.
 
-**Permisos. DECISIÓN PENDIENTE, pregúntamela antes de implementar:**
+**Permisos. DECIDIDO (19 nov 2026): opción B**, permisos fijos por rol con Gates/Policies, sin `spatie/laravel-permission`. Las opciones que se evaluaron:
 
 - **Opción A (recomendada si el cliente quiere ajustar permisos):** instalar `spatie/laravel-permission`, con los roles `owner` y `clerk` y estos permisos:
   - `sell`

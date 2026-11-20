@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Lot;
+use App\Models\Product;
+use App\Models\Stock;
+use App\Models\Supplier;
+use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -51,4 +56,28 @@ expect()->extend('toBeOne', function () {
 function failsOn(string $field): Closure
 {
     return fn (ValidationException $exception) => expect($exception->errors())->toHaveKey($field);
+}
+
+/**
+ * Puts a lot of the product in the warehouse, owned by the business unless an owner is given.
+ */
+function stockLot(Product $product, Warehouse $warehouse, string $quantity, string $receivedAt, ?Supplier $owner = null): Stock
+{
+    $lot = Lot::factory()->for($product)->create([
+        'quantity_received' => $quantity,
+        'received_at' => $receivedAt,
+        'owner_supplier_id' => $owner?->id,
+    ]);
+
+    return Stock::factory()->for($lot)->for($warehouse)->create(['product_id' => $product->id, 'quantity' => $quantity]);
+}
+
+/**
+ * Total stock of a product in a warehouse, as a 3-decimal string.
+ */
+function stockOf(Product $product, Warehouse $warehouse): string
+{
+    $total = Stock::query()->where('product_id', $product->id)->where('warehouse_id', $warehouse->id)->sum('quantity');
+
+    return number_format((float) $total, 3, '.', '');
 }
