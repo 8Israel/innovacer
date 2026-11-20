@@ -15,4 +15,22 @@ enum SupplierSettlementType: string
 
     /** Lends product that is repaid with the same product (Francisco). */
     case InKind = 'in_kind';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Purchase => __('Compra'),
+            self::Consignment => __('Consigna'),
+            self::InKind => __('En especie'),
+        };
+    }
+
+    public function description(): string
+    {
+        return match ($this) {
+            self::Purchase => __('se paga lo recibido'),
+            self::Consignment => __('se paga lo vendido'),
+            self::InKind => __('se le repone el producto'),
+        };
+    }
 }

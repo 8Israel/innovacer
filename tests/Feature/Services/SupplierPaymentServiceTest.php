@@ -4,6 +4,7 @@ use App\Models\CashMovement;
 use App\Models\CashMovementCategory;
 use App\Models\CashMovementType;
 use App\Models\CashSession;
+use App\Models\Lot;
 use App\Models\PaymentMethod;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
@@ -14,6 +15,7 @@ use App\Services\SupplierPaymentService;
 test('it takes a cash debt payment to Ortitec out of the expected cash exactly once', function () {
     $session = CashSession::factory()->create(['opening_cash' => 10000]);
     $ortitec = Supplier::factory()->create(['name' => 'Ortitec']);
+    Lot::factory()->for($ortitec)->create(['quantity_received' => 10, 'unit_cost' => 1000]);
 
     $payment = app(SupplierPaymentService::class)->pay(User::factory()->owner()->create(), $ortitec, PaymentMethod::Cash, '4000', 'Recibo 120');
 

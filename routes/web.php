@@ -36,6 +36,9 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::livewire('clientes/{customer}/estado-de-cuenta', 'pages::customers.statement')->name('customers.statement');
     Route::get('clientes/{customer}/estado-de-cuenta/imprimir', CustomerStatementController::class)->name('customers.statement.print');
 
+    Route::livewire('proveedores', 'pages::suppliers.index')->name('suppliers.index');
+    Route::livewire('proveedores/{supplier}', 'pages::suppliers.show')->name('suppliers.show');
+
     Route::livewire('configuracion', 'pages::configuration.index')->middleware('permission:manage_settings')->name('configuration.index');
 
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');

@@ -36,6 +36,9 @@
                 <flux:sidebar.item icon="users" :href="route('customers.index')" :current="request()->routeIs('customers.*')" wire:navigate>
                     {{ __('Clientes y cobranza') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="truck" :href="route('suppliers.index')" :current="request()->routeIs('suppliers.*')" wire:navigate>
+                    {{ __('Proveedores') }}
+                </flux:sidebar.item>
                 <flux:sidebar.item icon="banknotes" :href="route('cash.index')" :current="request()->routeIs('cash.*')" wire:navigate>
                     {{ __('Caja') }}
                 </flux:sidebar.item>

@@ -16,14 +16,27 @@ use Illuminate\Validation\ValidationException;
  * register through this record only — it is never also a cash movement, so it is
  * subtracted from the expected cash exactly once. Expenses with a supplier that are
  * not debt (e.g. freight) are cash movements instead (CashMovementCategory::SupplierExpense).
- * Spreading a payment over lots (RF-31) comes with the suppliers module.
+ * Each payment is spread over the pending lots (RF-31, see SupplierDebtService::plan()).
  */
 class SupplierPaymentService
 {
-    public function __construct(private CashSessionService $cashSessions) {}
+    public function __construct(
+        private CashSessionService $cashSessions,
+        private SupplierDebtService $debts,
+    ) {}
 
-    public function pay(User $user, Supplier $supplier, PaymentMethod $method, string $amount, ?string $reference = null, ?string $note = null): SupplierPayment
-    {
+    /**
+     * @param  array<int, string>|null  $productAmounts  how much goes to each product; null settles the oldest debt first.
+     */
+    public function pay(
+        User $user,
+        Supplier $supplier,
+        PaymentMethod $method,
+        string $amount,
+        ?string $reference = null,
+        ?string $note = null,
+        ?array $productAmounts = null,
+    ): SupplierPayment {
         if (! $user->hasPermission(Permission::PaySuppliers)) {
             throw ValidationException::withMessages(['authorization' => __('Solo el dueño puede pagar a proveedores.')]);
         }
@@ -38,21 +51,36 @@ class SupplierPaymentService
             throw ValidationException::withMessages(['amount' => __('El pago debe ser mayor a cero.')]);
         }
 
-        return DB::transaction(function () use ($user, $supplier, $method, $amount, $reference, $note): SupplierPayment {
+        return DB::transaction(function () use ($user, $supplier, $method, $amount, $reference, $note, $productAmounts): SupplierPayment {
+            $supplier = Supplier::query()->lockForUpdate()->findOrFail($supplier->id);
+            $amount = bcadd($amount, '0', 2);
+
             $session = $method === PaymentMethod::Cash
                 ? $this->cashSessions->requireOpen()
                 : $this->cashSessions->current();
 
-            return SupplierPayment::create([
+            $plan = $this->debts->plan($supplier, $amount, $productAmounts);
+
+            $payment = SupplierPayment::create([
                 'cash_session_id' => $session?->id,
                 'supplier_id' => $supplier->id,
                 'user_id' => $user->id,
                 'method' => $method,
-                'amount' => bcadd($amount, '0', 2),
+                'amount' => $amount,
                 'reference' => $reference,
                 'note' => $note,
                 'paid_at' => now(),
             ]);
+
+            foreach ($plan as $allocation) {
+                $payment->allocations()->create([
+                    'lot_id' => $allocation['lot']->id,
+                    'quantity' => $allocation['quantity'],
+                    'amount' => $allocation['amount'],
+                ]);
+            }
+
+            return $payment;
         });
     }
 }
