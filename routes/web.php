@@ -14,6 +14,8 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
 
     Route::livewire('punto-de-venta', 'pages::pos.index')->middleware('permission:sell')->name('pos.index');
     Route::middleware('permission:sell')->group(function () {
+        Route::livewire('ventas', 'pages::sales.index')->name('sales.index');
+        Route::livewire('ventas/{sale}', 'pages::sales.show')->name('sales.show');
         Route::get('ventas/{sale}/ticket', [SaleDocumentController::class, 'ticket'])->name('sales.ticket');
         Route::get('ventas/{sale}/nota', [SaleDocumentController::class, 'note'])->name('sales.note');
     });

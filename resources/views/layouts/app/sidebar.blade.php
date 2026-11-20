@@ -18,6 +18,9 @@
                     <flux:sidebar.item icon="shopping-cart" :href="route('pos.index')" :current="request()->routeIs('pos.*')" wire:navigate>
                         {{ __('Punto de venta') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="receipt-percent" :href="route('sales.index')" :current="request()->routeIs('sales.*')" wire:navigate>
+                        {{ __('Ventas') }}
+                    </flux:sidebar.item>
                 @endcan
                 @can(\App\Models\Permission::ManageInventory->value)
                     <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.index', 'inventory.entry', 'inventory.kardex')" wire:navigate>
