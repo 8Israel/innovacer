@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Buscar clave SAT — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button{font:inherit}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.x{width:40px;height:40px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3F4B44}
+.opt{display:flex;gap:14px;align-items:center;padding:12px 14px;border:1px solid #DDE3DD;border-radius:10px;cursor:pointer}
+.opt.on{border:2px solid #125D40;background:#F1F7F3}
+.code{font-weight:600;font-size:14px;color:#3F4B44;width:110px;flex:none}
+</style>
+</head>
+<body>
+
+<div style="width: 720px; height: 720px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 580px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Clave de producto SAT</h2>
+<span style="font-size: 14px; color: #56635B">Para Bigfix 1 L</span>
+</div>
+<a class="x" href="Producto.html" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<input class="field" type="search" aria-label="Buscar en el catálogo del SAT" value="fertilizante">
+<div role="radiogroup" aria-label="Resultados" style="display: flex; flex-direction: column; gap: 8px">
+<label class="opt on"><input type="radio" name="sat" checked style="accent-color: #125D40"><span class="code num">[Clave SAT]</span><span style="font-size: 14px">Fertilizantes nitrogenados</span></label>
+<label class="opt"><input type="radio" name="sat" style="accent-color: #125D40"><span class="code num">[Clave SAT]</span><span style="font-size: 14px">Fertilizantes de fósforo</span></label>
+<label class="opt"><input type="radio" name="sat" style="accent-color: #125D40"><span class="code num">[Clave SAT]</span><span style="font-size: 14px">Fertilizantes de potasio</span></label>
+<label class="opt"><input type="radio" name="sat" style="accent-color: #125D40"><span class="code num">[Clave SAT]</span><span style="font-size: 14px">Nutrientes para plantas y abonos orgánicos</span></label>
+</div>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7; font-size: 13px; color: #3F4B44">Las claves y descripciones salen del catálogo oficial del SAT, que se carga completo en el sistema. Si dudas cuál usar, confírmalo con el contador.</div>
+<label style="display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: 14px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #125D40">Usar esta clave también en los demás productos de Ortitec sin clave (3)</label>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="Producto.html">Cancelar</a>
+<a class="btn primary" href="Producto.html">Usar esta clave</a>
+</div>
+</div>
+</div>
+</body>
+</html>

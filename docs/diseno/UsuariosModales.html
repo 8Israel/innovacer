@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Usuarios y almacenes — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button,select{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.seg{flex:1 1 0;min-height:44px;border:1px solid #C9D2CB;background:#fff;border-radius:8px;font-weight:600;font-size:14px;color:#3F4B44;cursor:pointer}
+.seg.on{border:2px solid #125D40;background:#E3EFE7;color:#125D40}
+.dlg{width:420px;box-sizing:border-box;background:#FFFFFF;border-radius:14px;box-shadow:0 16px 48px rgba(21,33,27,.3);padding:22px;display:flex;flex-direction:column;gap:14px}
+.f{display:flex;flex-direction:column;gap:6px}
+h2{font-family:Montserrat,sans-serif;font-size:19px;font-weight:700;margin:0}
+.help{font-size:13px;color:#56635B}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 760px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; gap: 36px; padding: 32px">
+<div class="dlg" role="dialog" aria-labelledby="u1">
+<h2 id="u1">Nuevo usuario</h2>
+<div class="f"><label for="nu-n">Nombre</label><input id="nu-n" class="field" placeholder="Nombre completo"></div>
+<div class="f"><label for="nu-u">Usuario para entrar</label><input id="nu-u" class="field" placeholder="Ej. mostrador2"></div>
+<fieldset style="border: 0; margin: 0; padding: 0" class="f">
+<legend style="font-size: 13px; font-weight: 600; color: #3F4B44; padding: 0; margin-bottom: 6px">Rol</legend>
+<div style="display: flex; gap: 8px"><button class="seg on">Encargada</button><button class="seg">Dueño</button></div>
+</fieldset>
+<div class="f"><label for="nu-p">Contraseña temporal</label><input id="nu-p" class="field num" value="Innova-4827"><span class="help">Al entrar por primera vez le pedirá cambiarla</span></div>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><a class="btn" href="Configuracion.html">Cancelar</a><a class="btn primary" href="Configuracion.html">Crear usuario</a></div>
+</div>
+<div class="dlg" role="dialog" aria-labelledby="u2">
+<h2 id="u2">Restablecer contraseña</h2>
+<span style="font-size: 15px">Para <strong>[Nombre de la encargada]</strong> (encargada)</span>
+<div style="padding: 16px; border-radius: 10px; background: #F1F7F3; display: flex; flex-direction: column; align-items: center; gap: 4px"><span class="help">Nueva contraseña temporal</span><span class="num" style="font-family: Montserrat, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: .04em; color: #125D40">Laguna-7315</span></div>
+<span class="help">Dásela en persona. Al entrar le pedirá poner una propia. Se cierra su sesión en otras computadoras.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><button class="btn">Generar otra</button><a class="btn primary" href="Configuracion.html">Listo</a></div>
+</div>
+<div class="dlg" role="dialog" aria-labelledby="u3">
+<h2 id="u3">Nuevo almacén</h2>
+<div class="f"><label for="na-n">Nombre</label><input id="na-n" class="field" placeholder="Ej. Bodega trasera"></div>
+<div class="f"><label for="na-d">Dueño del producto</label><select id="na-d" class="field"><option>Innovacer (propio)</option><option>Un proveedor…</option><option>Otra persona (consigna)…</option></select></div>
+<label style="display: flex; gap: 10px; align-items: flex-start; font-weight: 500; font-size: 14px; color: #15211B"><input type="checkbox" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #125D40"><span>Se puede vender directo desde aquí</span></label>
+<span class="help">Si no se vende directo, el producto pasa al mostrador con un traspaso.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><a class="btn" href="Configuracion.html">Cancelar</a><a class="btn primary" href="Configuracion.html">Crear almacén</a></div>
+</div>
+</div>
+</body>
+</html>

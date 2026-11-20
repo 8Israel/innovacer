@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Nueva cuenta o destino — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+input,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.x{width:40px;height:40px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3F4B44}
+</style>
+</head>
+<body>
+
+<div style="width: 640px; height: 520px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 480px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Nueva cuenta o destino</h2>
+<span style="font-size: 14px; color: #56635B">Para Francisco Castañón</span>
+</div>
+<a class="x" href="Main.html" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="c-n">Nombre de la cuenta</label><input id="c-n" class="field" placeholder="Ej. nombre del rancho o la ciudad"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="c-r">Referencia</label><input id="c-r" class="field" placeholder="Opcional: dirección o quién recibe"></div>
+<span style="font-size: 13px; color: #56635B">La cuenta lleva su propio saldo y aparece en sus estados de cuenta y en el reporte de ventas por destino.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="Main.html">Cancelar</a>
+<a class="btn primary" href="Main.html">Crear y usar en esta venta</a>
+</div>
+</div>
+</div>
+</body>
+</html>

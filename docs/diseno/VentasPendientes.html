@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ventas pendientes — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.x{width:40px;height:40px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3F4B44}
+.it{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #EAEEEA}
+</style>
+</head>
+<body>
+
+<div style="width: 720px; height: 640px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 600px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Ventas pendientes</h2>
+<span style="font-size: 14px; color: #56635B">No descuentan inventario hasta que se cobran</span>
+</div>
+<a class="x" href="Main.html" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<div class="it">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Ing. Meléndez</span><span style="font-size: 13px; color: #56635B">4 productos · hace 25 min · "Viene por ellas a las 4"</span></div>
+<span class="num" style="font-weight: 600">$6,300.00</span>
+<a class="btn primary" href="Main.html">Retomar</a>
+<button class="btn" aria-label="Descartar venta de Ing. Meléndez" style="padding: 0 10px; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 18px; height: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+</div>
+<div class="it">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Público en general</span><span style="font-size: 13px; color: #56635B">2 productos · hace 1 h</span></div>
+<span class="num" style="font-weight: 600">$370.00</span>
+<a class="btn primary" href="Main.html">Retomar</a>
+<button class="btn" aria-label="Descartar venta de público en general" style="padding: 0 10px; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 18px; height: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+</div>
+<div class="it" style="border-bottom: 0">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Ernesto Castaño</span><span style="font-size: 13px; color: #56635B">7 productos · ayer 17:40 · "Confirma mañana"</span></div>
+<span class="num" style="font-weight: 600">$14,880.00</span>
+<a class="btn primary" href="Main.html">Retomar</a>
+<button class="btn" aria-label="Descartar venta de Ernesto Castaño" style="padding: 0 10px; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 18px; height: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
+</div>
+<div style="padding: 10px 12px; border-radius: 8px; background: #FFF8EA; color: #5E3A00; font-size: 13px">Al retomar, el sistema revisa otra vez la existencia y los precios, por si cambiaron.</div>
+</div>
+</div>
+</body>
+</html>

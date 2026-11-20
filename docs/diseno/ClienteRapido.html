@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Elegir cliente — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}
+.num{font-variant-numeric:tabular-nums}
+input,button,select{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.seg{flex:1 1 0;min-height:44px;border:1px solid #C9D2CB;background:#fff;border-radius:8px;font-weight:600;font-size:14px;color:#3F4B44;cursor:pointer}
+.seg.on{border:2px solid #125D40;background:#E3EFE7;color:#125D40}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;text-decoration:none;color:#15211B}
+.opt:hover{background:#F1F7F3}
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.x{width:40px;height:40px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3F4B44}
+</style>
+</head>
+<body>
+
+<div style="width: 720px; height: 760px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 560px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Cliente de la venta</h2>
+<a class="x" href="Main.html" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<input class="field" type="search" aria-label="Buscar cliente" value="cast">
+<div style="display: flex; flex-direction: column; gap: 2px; margin-top: -6px">
+<a class="opt" href="Main.html"><span style="font-weight: 600">Francisco Castañón</span><span class="chip num" style="background: #E8EEF8; color: #1A4F9C">Crédito · debe $12,400.00</span></a>
+<a class="opt" href="Main.html"><span style="font-weight: 600">Ernesto Castaño</span><span class="chip num" style="background: #E8EEF8; color: #1A4F9C">Crédito · debe $3,200.00</span></a>
+<a class="opt" href="Main.html" style="color: #3F4B44"><span>Público en general (sin cliente)</span><span class="chip" style="background: #EEF0EE; color: #3F4B44">Contado</span></a>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; color: #56635B; font-size: 13px; font-weight: 600"><span style="flex: 1; height: 1px; background: #DDE3DD"></span>¿No está? Dalo de alta rápido<span style="flex: 1; height: 1px; background: #DDE3DD"></span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="r-n">Nombre</label><input id="r-n" class="field" placeholder="Nombre del cliente"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="r-t">Teléfono</label><input id="r-t" class="field" placeholder="Opcional"></div>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 13px; font-weight: 600; color: #3F4B44; padding: 0; margin-bottom: 6px">Tipo</legend>
+<div style="display: flex; gap: 8px"><button class="seg on">Contado</button><button class="seg">Crédito · lo aprueba el dueño</button></div>
+</fieldset>
+<span style="font-size: 13px; color: #56635B">Los demás datos (fiscales, cuentas, descuento) se completan después en su ficha.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="Main.html">Cancelar</a>
+<a class="btn primary" href="Main.html">Guardar y usar</a>
+</div>
+</div>
+</div>
+</body>
+</html>

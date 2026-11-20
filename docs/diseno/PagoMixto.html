@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pago mixto — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button,select{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.x{width:40px;height:40px;border:0;background:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3F4B44}
+.pay{display:grid;grid-template-columns:160px 1fr 1fr 40px;gap:10px;align-items:end;padding:12px;border:1px solid #DDE3DD;border-radius:10px}
+.row{display:flex;justify-content:space-between;font-size:15px;padding:6px 0}
+</style>
+</head>
+<body>
+
+<div style="width: 720px; height: 760px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 600px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Pagar con varias formas</h2>
+<span style="font-size: 14px; color: #56635B">Venta #1044 · total <strong class="num" style="color: #15211B">$8,577.00</strong></span>
+</div>
+<a class="x" href="Main.html" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<div class="pay">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p1">Forma</label><select id="p1" class="field"><option>Efectivo</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p1m">Monto</label><input id="p1m" class="field num" value="$5,000.00"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p1r">Recibido</label><input id="p1r" class="field num" value="$5,000.00"></div>
+<button class="x" aria-label="Quitar efectivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 18px; height: 18px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<div class="pay">
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p2">Forma</label><select id="p2" class="field"><option>Transferencia</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p2m">Monto</label><input id="p2m" class="field num" value="$3,577.00"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="p2r">Referencia</label><input id="p2r" class="field num" value="7781"></div>
+<button class="x" aria-label="Quitar transferencia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 18px; height: 18px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<button class="btn" style="align-self: flex-start; border-style: dashed; color: #1A4F9C">+ Agregar otra forma</button>
+<label style="display: flex; gap: 10px; align-items: center; min-height: 44px; font-weight: 500; font-size: 15px; color: #15211B"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #125D40">Dejar lo que falte a crédito en su cuenta Reynosa</label>
+<div style="padding: 10px 14px; border-radius: 10px; background: #F7F9F7">
+<div class="row"><span style="color: #3F4B44">Pagado</span><span class="num">$8,577.00</span></div>
+<div class="row"><span style="color: #3F4B44">Falta</span><span class="num" style="font-weight: 600; color: #125D40">$0.00</span></div>
+<div class="row"><span style="color: #3F4B44">Cambio</span><span class="num">$0.00</span></div>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="Main.html">Cancelar</a>
+<a class="btn primary" href="VentaRegistrada.html" style="min-width: 180px">Cobrar $8,577.00</a>
+</div>
+</div>
+</div>
+</body>
+</html>

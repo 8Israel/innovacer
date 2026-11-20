@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Punto de venta — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6F3;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}a:hover{color:#123A75}
+h1,h2,h3{font-family:Montserrat,sans-serif;margin:0;color:#15211B}
+.nav{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:#3F4B44;text-decoration:none;font-size:15px;font-weight:500}
+.nav:hover{background:#EEF2EE;color:#15211B}
+.nav.on{background:#E3EFE7;color:#125D40;font-weight:600}
+.nav svg{width:20px;height:20px;flex:none}
+.num{font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#56635B;font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid #DDE3DD;white-space:nowrap}
+td{padding:12px;border-bottom:1px solid #EAEEEA;font-size:14px;vertical-align:middle}
+input,select,textarea,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.btn.primary:hover{background:#0E4A33}
+.seg{flex:1 1 0;min-height:44px;border:1px solid #C9D2CB;background:#fff;border-radius:8px;font-weight:600;font-size:14px;color:#3F4B44;cursor:pointer}
+.seg.on{border:2px solid #125D40;background:#E3EFE7;color:#125D40}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-wrap: wrap; min-height: 1000px">
+<nav aria-label="Principal" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #DDE3DD; padding: 24px 16px; display: flex; flex-direction: column; gap: 28px">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 184px; height: auto; display: block; margin: 4px 8px 0">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a class="nav on" href="Main.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Punto de venta</a>
+<a class="nav" href="Ventas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Ventas</a>
+<a class="nav" href="Inventario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path><path d="M12 11v10"></path></svg>Inventario</a>
+<a class="nav" href="Traspaso.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg>Traspasos</a>
+<a class="nav" href="Clientes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Clientes y cobranza</a>
+<a class="nav" href="Proveedores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 10h4l4 4v2h-8"></path><circle cx="6" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>Proveedores</a>
+<a class="nav" href="Caja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path><path d="M16 13h2"></path></svg>Caja</a>
+<a class="nav" href="Facturar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"></path><path d="M14 2v5h5M9 13h7M9 17h7"></path></svg>Facturación</a>
+<a class="nav" href="Reportes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"></path></svg>Reportes</a>
+<a class="nav" href="Configuracion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9L7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Configuración</a>
+</div>
+<div style="margin-top: auto; padding: 12px; border-radius: 8px; background: #F4F6F3; display: flex; flex-direction: column; gap: 2px">
+<a href="MiCuenta.html" style="font-size: 14px; font-weight: 600">Encargada · Mi cuenta</a>
+<span style="font-size: 13px; color: #56635B">Caja abierta · Mostrador</span>
+</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="font-size: 26px; font-weight: 700">Nueva venta</h1>
+<span style="font-size: 14px; color: #56635B">Venta #1044 · vie 9 oct 2026</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span style="font-size: 13px; color: #56635B">Sale de</span>
+<span class="chip" style="background: #E3EFE7; color: #125D40; font-size: 14px; padding: 6px 12px">Mostrador Innovacer</span>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+<section aria-label="Productos de la venta" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="buscar">Agregar producto</label>
+<div style="position: relative">
+<input id="buscar" class="field" type="search" placeholder="Escanea el código o busca por nombre o clave" style="padding-left: 44px; min-height: 52px; font-size: 16px; border: 2px solid #125D40">
+<svg viewBox="0 0 24 24" fill="none" stroke="#56635B" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 14px; top: 16px; width: 20px; height: 20px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+</div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px; overflow-x: auto">
+<table>
+<thead>
+<tr><th>Producto</th><th>Existencia</th><th style="text-align: right">Cant.</th><th style="text-align: right">Precio</th><th style="text-align: right">Importe</th><th><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Quitar</span></th></tr>
+</thead>
+<tbody>
+<tr>
+<td><div style="font-weight: 600">Ultra Nitrógeno 20 L</div><div style="font-size: 13px; color: #56635B">UNI-20 · Biotexa</div></td>
+<td><span class="num" style="font-size: 13px; color: #3F4B44">12 → quedan 10</span></td>
+<td class="num" style="text-align: right; font-weight: 600">2</td>
+<td class="num" style="text-align: right">$1,250.00</td>
+<td class="num" style="text-align: right; font-weight: 600">$2,500.00</td>
+<td style="text-align: right"><button class="btn" aria-label="Quitar Ultra Nitrógeno 20 L" style="min-height: 36px; padding: 0 10px; border-color: transparent; color: #56635B">✕</button></td>
+</tr>
+<tr>
+<td><div style="font-weight: 600">Calcio 1 L</div><div style="font-size: 13px; color: #56635B">CAL-01 · Coda</div></td>
+<td><span class="num" style="font-size: 13px; color: #3F4B44">20 → quedan 14</span></td>
+<td class="num" style="text-align: right; font-weight: 600">6</td>
+<td class="num" style="text-align: right">$185.00</td>
+<td class="num" style="text-align: right; font-weight: 600">$1,110.00</td>
+<td style="text-align: right"><button class="btn" aria-label="Quitar Calcio 1 L" style="min-height: 36px; padding: 0 10px; border-color: transparent; color: #56635B">✕</button></td>
+</tr>
+<tr>
+<td><div style="font-weight: 600">Ultra Magnesio 20 L</div><div style="font-size: 13px; color: #56635B">UMG-20 · Ortitec</div></td>
+<td><span class="chip num" style="background: #FFF1D6; color: #7A4A00">6 → quedan 2 · bajo mínimo</span></td>
+<td class="num" style="text-align: right; font-weight: 600">4</td>
+<td class="num" style="text-align: right">$1,480.00</td>
+<td class="num" style="text-align: right; font-weight: 600">$5,920.00</td>
+<td style="text-align: right"><button class="btn" aria-label="Quitar Ultra Magnesio 20 L" style="min-height: 36px; padding: 0 10px; border-color: transparent; color: #56635B">✕</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="obs">Observaciones (aparecen en la nota y en el historial)</label>
+<textarea id="obs" class="field" rows="3" style="resize: vertical">Se lo llevó el Ing. Meléndez para el rancho de Reynosa.</textarea>
+</div>
+</section>
+<aside aria-label="Cobro" style="flex: 1 1 340px; max-width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><label for="cliente">Cliente</label><a href="ClienteRapido.html" style="font-size: 13px; font-weight: 600">Cambiar o dar de alta</a></div>
+<select id="cliente" class="field"><option>Francisco Castañón</option></select>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span class="chip" style="background: #E8EEF8; color: #1A4F9C">Crédito · saldo $12,400.00</span>
+<span class="chip" style="background: #E3EFE7; color: #125D40">Descuento fijo 10%</span>
+</div>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 13px; font-weight: 600; color: #3F4B44; padding: 0; margin-bottom: 6px">Cuenta o destino</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button class="seg on" style="flex: 1 1 96px">Reynosa</button>
+<button class="seg" style="flex: 1 1 96px">Jalincher</button>
+<a class="seg" href="NuevaCuenta.html" style="flex: 1 1 96px; color: #1A4F9C; display: flex; align-items: center; justify-content: center; text-decoration: none">+ Nueva</a>
+</div>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid #EAEEEA; border-bottom: 1px solid #EAEEEA">
+<div style="display: flex; justify-content: space-between; font-size: 15px"><span>Subtotal</span><span class="num">$9,530.00</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px; color: #125D40"><span>Descuento cliente (10%)</span><span class="num">−$953.00</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px"><span>IVA / IEPS <span style="color: #56635B; font-size: 13px">según producto</span></span><span class="num">$0.00</span></div>
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px"><span style="font-family: Montserrat, sans-serif; font-weight: 700; font-size: 18px">Total</span><span class="num" style="font-family: Montserrat, sans-serif; font-weight: 700; font-size: 30px; color: #125D40">$8,577.00</span></div>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-size: 13px; font-weight: 600; color: #3F4B44; padding: 0; margin-bottom: 6px">Forma de pago</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button class="seg on">Efectivo</button>
+<button class="seg">Tarjeta</button>
+<button class="seg">Transferencia</button>
+<button class="seg">A crédito</button>
+</div>
+<a href="PagoMixto.html" style="font-size: 13px; font-weight: 600">Pagar con varias formas</a>
+</fieldset>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="recibido">Recibido</label>
+<input id="recibido" class="field num" value="$9,000.00">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 600; color: #3F4B44">Cambio</span>
+<span class="num" style="min-height: 44px; display: flex; align-items: center; font-size: 22px; font-weight: 700">$423.00</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<a class="btn primary" href="VentaRegistrada.html" style="min-height: 52px; font-size: 16px; text-decoration: none">Cobrar e imprimir ticket</a>
+<div style="display: flex; gap: 8px">
+<button class="btn" style="flex: 1 1 0">Nota de venta</button>
+<a class="btn" href="VentasPendientes.html" style="flex: 1 1 0; text-decoration: none">Dejar pendiente</a>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body>
+</html>

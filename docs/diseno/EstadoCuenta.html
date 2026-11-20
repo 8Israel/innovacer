@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Estado de cuenta — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6F3;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}a:hover{color:#123A75}
+h1,h2,h3{font-family:Montserrat,sans-serif;margin:0;color:#15211B}
+.nav{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:#3F4B44;text-decoration:none;font-size:15px;font-weight:500}
+.nav:hover{background:#EEF2EE;color:#15211B}
+.nav.on{background:#E3EFE7;color:#125D40;font-weight:600}
+.nav svg{width:20px;height:20px;flex:none}
+.num{font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#56635B;font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid #DDE3DD;white-space:nowrap}
+td{padding:12px;border-bottom:1px solid #EAEEEA;font-size:14px;vertical-align:top}
+input,select,textarea,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.tab{min-height:44px;padding:0 16px;border:0;border-bottom:3px solid transparent;background:none;font-weight:600;font-size:15px;color:#56635B;cursor:pointer}
+.tab.on{border-bottom-color:#125D40;color:#125D40}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.card{background:#FFFFFF;border:1px solid #DDE3DD;border-radius:12px;padding:18px 20px;box-sizing:border-box}
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-wrap: wrap; min-height: 1100px">
+<nav aria-label="Principal" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #DDE3DD; padding: 24px 16px; display: flex; flex-direction: column; gap: 28px">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 184px; height: auto; display: block; margin: 4px 8px 0">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a class="nav" href="Main.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Punto de venta</a>
+<a class="nav" href="Ventas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Ventas</a>
+<a class="nav" href="Inventario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path><path d="M12 11v10"></path></svg>Inventario</a>
+<a class="nav" href="Traspaso.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg>Traspasos</a>
+<a class="nav on" href="Clientes.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Clientes y cobranza</a>
+<a class="nav" href="Proveedores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 10h4l4 4v2h-8"></path><circle cx="6" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>Proveedores</a>
+<a class="nav" href="Caja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path><path d="M16 13h2"></path></svg>Caja</a>
+<a class="nav" href="Facturar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"></path><path d="M14 2v5h5M9 13h7M9 17h7"></path></svg>Facturación</a>
+<a class="nav" href="Reportes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"></path></svg>Reportes</a>
+<a class="nav" href="Configuracion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9L7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Configuración</a>
+</div>
+<div style="margin-top: auto; padding: 12px; border-radius: 8px; background: #F4F6F3; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">Encargada</span>
+<span style="font-size: 13px; color: #56635B">Caja abierta · Mostrador</span>
+</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a href="Clientes.html" style="font-size: 14px; font-weight: 600; text-decoration: none">← Clientes</a>
+<h1 style="font-size: 26px; font-weight: 700">Francisco Castañón</h1>
+<span style="font-size: 14px; color: #56635B">Cliente de crédito · crédito abierto, sin límite · RFC [POR CAPTURAR]</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<a class="btn" href="Impresos2.html" style="text-decoration: none">Imprimir estado de cuenta</a>
+<a class="btn" href="Main.html" style="text-decoration: none">Nueva venta</a>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+<div class="card" style="display: flex; flex-direction: column; gap: 6px; border: 2px solid #125D40">
+<span style="font-size: 13px; font-weight: 600; color: #3F4B44">Saldo total</span>
+<span class="num" style="font-family: Montserrat, sans-serif; font-size: 30px; font-weight: 700; color: #125D40">$12,400.00</span>
+<span style="font-size: 13px; color: #56635B">Último abono: 8 oct</span>
+</div>
+<div class="card" style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 600; color: #3F4B44">Cuenta Reynosa</span>
+<span class="num" style="font-family: Montserrat, sans-serif; font-size: 30px; font-weight: 700">$8,200.00</span>
+<span style="font-size: 13px; color: #56635B">2 ventas con saldo</span>
+</div>
+<div class="card" style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 600; color: #3F4B44">Cuenta Jalincher</span>
+<span class="num" style="font-family: Montserrat, sans-serif; font-size: 30px; font-weight: 700">$4,200.00</span>
+<span style="font-size: 13px; color: #56635B">1 venta con saldo</span>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<section aria-label="Ventas con saldo" style="background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px">
+<h2 style="font-size: 17px; font-weight: 700; padding: 16px 16px 4px">Ventas</h2>
+<div style="overflow-x: auto">
+<table>
+<thead><tr><th>Venta</th><th>Cuenta</th><th style="text-align: right">Total</th><th style="text-align: right">Abonado</th><th style="text-align: right">Pendiente</th><th>Estado</th></tr></thead>
+<tbody>
+<tr><td class="num" style="font-weight: 600">#1012 · 21 sep</td><td>Reynosa</td><td class="num" style="text-align: right">$6,200.00</td><td class="num" style="text-align: right">$0.00</td><td class="num" style="text-align: right; font-weight: 600">$6,200.00</td><td><span class="chip" style="background: #FFF1D6; color: #7A4A00">Pendiente</span></td></tr>
+<tr><td class="num" style="font-weight: 600">#0995 · 3 sep</td><td>Jalincher</td><td class="num" style="text-align: right">$7,000.00</td><td class="num" style="text-align: right">$2,800.00</td><td class="num" style="text-align: right; font-weight: 600">$4,200.00</td><td><span class="chip" style="background: #E8EEF8; color: #1A4F9C">Parcial</span></td></tr>
+<tr><td class="num" style="font-weight: 600">#0981 · 25 ago</td><td>Reynosa</td><td class="num" style="text-align: right">$18,000.00</td><td class="num" style="text-align: right">$16,000.00</td><td class="num" style="text-align: right; font-weight: 600">$2,000.00</td><td><span class="chip" style="background: #E8EEF8; color: #1A4F9C">Parcial</span></td></tr>
+<tr><td class="num" style="font-weight: 600; color: #56635B">#0960 · 9 ago</td><td style="color: #56635B">Reynosa</td><td class="num" style="text-align: right; color: #56635B">$3,500.00</td><td class="num" style="text-align: right; color: #56635B">$3,500.00</td><td class="num" style="text-align: right; color: #56635B">$0.00</td><td><span class="chip" style="background: #E3EFE7; color: #125D40">Liquidada 14 ago</span></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+<section aria-label="Movimientos de la cuenta" style="background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px 0; border-bottom: 1px solid #DDE3DD">
+<h2 style="font-size: 17px; font-weight: 700">Movimientos</h2>
+<div role="tablist" aria-label="Cuenta" style="display: flex">
+<button class="tab on" role="tab" aria-selected="true">Todas</button>
+<button class="tab" role="tab" aria-selected="false">Reynosa</button>
+<button class="tab" role="tab" aria-selected="false">Jalincher</button>
+</div>
+</div>
+<div style="overflow-x: auto">
+<table>
+<thead><tr><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th style="text-align: right">Cargo</th><th style="text-align: right">Abono</th><th style="text-align: right">Saldo cuenta</th></tr></thead>
+<tbody>
+<tr><td class="num">8 oct</td><td><div style="font-weight: 600">Abono · efectivo</div><div style="font-size: 13px; color: #56635B">Aplicado a #0981</div></td><td>Reynosa</td><td></td><td class="num" style="text-align: right; color: #125D40; font-weight: 600">$2,000.00</td><td class="num" style="text-align: right">$8,200.00</td></tr>
+<tr><td class="num">30 sep</td><td><div style="font-weight: 600">Abono · tarjeta</div><div style="font-size: 13px; color: #56635B">Aplicado a #0995 · Visa, ref. 0921</div></td><td>Jalincher</td><td></td><td class="num" style="text-align: right; color: #125D40; font-weight: 600">$2,800.00</td><td class="num" style="text-align: right">$4,200.00</td></tr>
+<tr><td class="num">21 sep</td><td><div style="font-weight: 600">Venta #1012</div></td><td>Reynosa</td><td class="num" style="text-align: right">$6,200.00</td><td></td><td class="num" style="text-align: right">$10,200.00</td></tr>
+<tr><td class="num">3 sep</td><td><div style="font-weight: 600">Venta #0995</div></td><td>Jalincher</td><td class="num" style="text-align: right">$7,000.00</td><td></td><td class="num" style="text-align: right">$7,000.00</td></tr>
+<tr><td class="num">28 ago</td><td><div style="font-weight: 600">Abono · transferencia</div><div style="font-size: 13px; color: #56635B">Aplicado a #0981 · ref. 4471</div></td><td>Reynosa</td><td></td><td class="num" style="text-align: right; color: #125D40; font-weight: 600">$14,000.00</td><td class="num" style="text-align: right">$4,000.00</td></tr>
+<tr><td class="num">25 ago</td><td><div style="font-weight: 600">Venta #0981</div></td><td>Reynosa</td><td class="num" style="text-align: right">$18,000.00</td><td></td><td class="num" style="text-align: right">$18,000.00</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<aside class="card" aria-label="Registrar abono" style="flex: 1 1 320px; max-width: 100%; display: flex; flex-direction: column; gap: 14px">
+<h2 style="font-size: 17px; font-weight: 700">Registrar abono</h2>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-cuenta">Cuenta</label><select id="a-cuenta" class="field"><option>Reynosa · $8,200.00</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-venta">Aplicar a</label><select id="a-venta" class="field"><option>#0981 · pendiente $2,000.00</option></select><span style="font-size: 13px; color: #56635B">Si sobra, pasa a la siguiente venta de la cuenta</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-monto">Monto</label><input id="a-monto" class="field num" value="$5,000.00"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-forma">Forma de pago</label><select id="a-forma" class="field"><option>Transferencia</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-ref">Referencia</label><input id="a-ref" class="field" placeholder="Folio o últimos dígitos"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-nota">Nota</label><textarea id="a-nota" class="field" rows="2" style="resize: vertical" placeholder="Opcional"></textarea></div>
+<div style="padding: 12px; border-radius: 8px; background: #F1F7F3; font-size: 14px; display: flex; flex-direction: column; gap: 4px">
+<span>Liquida <strong>#0981</strong> ($2,000.00)</span>
+<span>Abona $3,000.00 a <strong>#1012</strong></span>
+<span style="color: #3F4B44">Saldo Reynosa queda en <strong class="num">$3,200.00</strong></span>
+</div>
+<button class="btn primary" style="min-height: 52px; font-size: 16px">Guardar abono</button>
+</aside>
+</div>
+</main>
+</div>
+</body>
+</html>

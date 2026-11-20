@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reportes — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6F3;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}a:hover{color:#123A75}
+h1,h2,h3{font-family:Montserrat,sans-serif;margin:0;color:#15211B}
+.nav{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:#3F4B44;text-decoration:none;font-size:15px;font-weight:500}
+.nav:hover{background:#EEF2EE;color:#15211B}
+.nav.on{background:#E3EFE7;color:#125D40;font-weight:600}
+.nav svg{width:20px;height:20px;flex:none}
+.num{font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#56635B;font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid #DDE3DD;white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid #EAEEEA;font-size:14px;vertical-align:middle}
+input,select,textarea,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.seg{min-height:40px;padding:0 14px;border:1px solid #C9D2CB;background:#fff;font-weight:600;font-size:14px;color:#3F4B44;cursor:pointer}
+.seg.on{background:#125D40;border-color:#125D40;color:#fff}
+.card{background:#FFFFFF;border:1px solid #DDE3DD;border-radius:12px;padding:18px 20px;box-sizing:border-box}
+.kpi{font-family:Montserrat,sans-serif;font-size:28px;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;padding:10px 0;border-bottom:1px solid #EAEEEA}
+.bar:hover path{opacity:.8}
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-wrap: wrap; min-height: 1200px">
+<nav aria-label="Principal" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #DDE3DD; padding: 24px 16px; display: flex; flex-direction: column; gap: 28px">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 184px; height: auto; display: block; margin: 4px 8px 0">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a class="nav" href="Main.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Punto de venta</a>
+<a class="nav" href="Ventas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Ventas</a>
+<a class="nav" href="Inventario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path><path d="M12 11v10"></path></svg>Inventario</a>
+<a class="nav" href="Traspaso.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg>Traspasos</a>
+<a class="nav" href="Clientes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"></path></svg>Clientes y cobranza</a>
+<a class="nav" href="Proveedores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 10h4l4 4v2h-8"></path><circle cx="6" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>Proveedores</a>
+<a class="nav" href="Caja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path><path d="M16 13h2"></path></svg>Caja</a>
+<a class="nav" href="Facturar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"></path><path d="M14 2v5h5M9 13h7M9 17h7"></path></svg>Facturación</a>
+<a class="nav on" href="Reportes.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"></path></svg>Reportes</a>
+<a class="nav" href="Configuracion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9L7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Configuración</a>
+</div>
+<div style="margin-top: auto; padding: 12px; border-radius: 8px; background: #F4F6F3; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">Dueño</span>
+<span style="font-size: 13px; color: #56635B">Acceso completo</span>
+</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="font-size: 26px; font-weight: 700">Reportes</h1>
+<span style="font-size: 14px; color: #56635B">Del 1 al 9 de octubre de 2026</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<div role="group" aria-label="Periodo" style="display: flex">
+<button class="seg" style="border-radius: 8px 0 0 8px">Hoy</button>
+<button class="seg" style="border-left: 0">Semana</button>
+<button class="seg on">Mes</button>
+<button class="seg" style="border-radius: 0 8px 8px 0; border-left: 0">Elegir fechas</button>
+</div>
+<button class="btn">Exportar a Excel</button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px">
+<div class="card" style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 600; color: #3F4B44">Ventas</span><span class="kpi num" style="color: #125D40">$337,680</span><span style="font-size: 13px; color: #56635B">8 días con venta</span></div>
+<div class="card" style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 600; color: #3F4B44">Utilidad bruta</span><span class="kpi num">$85,780</span><span style="font-size: 13px; color: #56635B">Margen 25.4% · venta menos costo del lote</span></div>
+<div class="card" style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 600; color: #3F4B44">Por cobrar a clientes</span><span class="kpi num">$34,250</span><a href="Clientes.html" style="font-size: 13px">3 clientes</a></div>
+<div class="card" style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; font-weight: 600; color: #3F4B44">Por pagar a proveedores</span><span class="kpi num">$169,300</span><a href="Proveedor.html" style="font-size: 13px">Ortitec $108,950 y 3 más</a></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+<section class="card" aria-labelledby="h-dia" style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<h2 id="h-dia" style="font-size: 17px; font-weight: 700">Ventas por día</h2>
+<span style="font-size: 13px; color: #56635B">Hoy es el día más alto del mes</span>
+<svg viewBox="0 0 640 232" role="img" aria-label="Ventas por día del 1 al 9 de octubre; el 9 de octubre, con $55,230, es el más alto" style="width: 100%; height: auto; font-family: 'IBM Plex Sans', sans-serif">
+<g stroke="#E3E8E4" stroke-width="1"><line x1="64" x2="624" y1="20" y2="20"></line><line x1="64" x2="624" y1="80" y2="80"></line><line x1="64" x2="624" y1="140" y2="140"></line></g>
+<line x1="64" x2="624" y1="200" y2="200" stroke="#9AA59E" stroke-width="1"></line>
+<g font-size="11" fill="#56635B" text-anchor="end"><text x="56" y="24">$60k</text><text x="56" y="84">$40k</text><text x="56" y="144">$20k</text><text x="56" y="204">$0</text></g>
+<g fill="#5E9C7B">
+<g class="bar"><title>jue 1 oct · $38,200</title><path d="M77 200V89Q77 85 81 85H109Q113 85 113 89V200Z"></path></g>
+<g class="bar"><title>vie 2 oct · $41,500</title><path d="M139 200V79Q139 75 143 75H171Q175 75 175 79V200Z"></path></g>
+<g class="bar"><title>sáb 3 oct · $22,800</title><path d="M201 200V136Q201 132 205 132H233Q237 132 237 136V200Z"></path></g>
+<g class="bar"><title>lun 5 oct · $47,900</title><path d="M324 200V60Q324 56 328 56H356Q360 56 360 60V200Z"></path></g>
+<g class="bar"><title>mar 6 oct · $36,100</title><path d="M386 200V96Q386 92 390 92H418Q422 92 422 96V200Z"></path></g>
+<g class="bar"><title>mié 7 oct · $44,650</title><path d="M448 200V70Q448 66 452 66H480Q484 66 484 70V200Z"></path></g>
+<g class="bar"><title>jue 8 oct · $51,300</title><path d="M510 200V50Q510 46 514 46H542Q546 46 546 50V200Z"></path></g>
+</g>
+<g class="bar"><title>vie 9 oct (hoy) · $55,230</title><path d="M571 200V38Q571 34 575 34H603Q607 34 607 38V200Z" fill="#125D40"></path></g>
+<text x="589" y="26" text-anchor="middle" font-size="12" font-weight="600" fill="#15211B">$55,230</text>
+<text x="280" y="194" text-anchor="middle" font-size="11" fill="#56635B">cerrado</text>
+<g font-size="11" fill="#56635B" text-anchor="middle"><text x="95" y="220">jue 1</text><text x="157" y="220">vie 2</text><text x="219" y="220">sáb 3</text><text x="280" y="220">dom 4</text><text x="342" y="220">lun 5</text><text x="404" y="220">mar 6</text><text x="466" y="220">mié 7</text><text x="528" y="220">jue 8</text><text x="589" y="220" font-weight="600" fill="#15211B">vie 9</text></g>
+</svg>
+</section>
+<section class="card" aria-labelledby="h-dest" style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<h2 id="h-dest" style="font-size: 17px; font-weight: 700; margin-bottom: 8px">Ventas por destino</h2>
+<div class="row"><span>Mostrador (sin destino)</span><span class="num" style="font-weight: 600">$257,380</span></div>
+<div class="row"><span>Reynosa</span><span class="num" style="font-weight: 600">$58,400</span></div>
+<div class="row"><span>Jalincher</span><span class="num" style="font-weight: 600">$21,900</span></div>
+<div class="row" style="border-bottom: 0"><span style="color: #56635B">Total</span><span class="num" style="font-weight: 600">$337,680</span></div>
+<span style="font-size: 13px; color: #56635B; margin-top: auto">Responde a "¿qué se llevó a tal lugar?"</span>
+</section>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+<section aria-labelledby="h-top" style="flex: 2 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px">
+<h2 id="h-top" style="font-size: 17px; font-weight: 700; padding: 16px 16px 4px">Más vendidos y su utilidad</h2>
+<div style="overflow-x: auto">
+<table>
+<thead><tr><th>Producto</th><th>Dueño</th><th style="text-align: right">Piezas</th><th style="text-align: right">Venta</th><th style="text-align: right">Utilidad</th><th style="text-align: right">Margen</th></tr></thead>
+<tbody>
+<tr><td style="font-weight: 600">Core 20 L</td><td>Ortitec</td><td class="num" style="text-align: right">32</td><td class="num" style="text-align: right">$67,200</td><td class="num" style="text-align: right; font-weight: 600">$16,000</td><td class="num" style="text-align: right">23.8%</td></tr>
+<tr><td style="font-weight: 600">Ultra Nitrógeno 20 L</td><td>Biotexa</td><td class="num" style="text-align: right">41</td><td class="num" style="text-align: right">$51,250</td><td class="num" style="text-align: right; font-weight: 600">$11,070</td><td class="num" style="text-align: right">21.6%</td></tr>
+<tr><td style="font-weight: 600">Ultra Magnesio 20 L</td><td>Ortitec</td><td class="num" style="text-align: right">28</td><td class="num" style="text-align: right">$41,440</td><td class="num" style="text-align: right; font-weight: 600">$9,240</td><td class="num" style="text-align: right">22.3%</td></tr>
+<tr><td style="font-weight: 600">Bigfix 1 L</td><td>Ortitec</td><td class="num" style="text-align: right">70</td><td class="num" style="text-align: right">$32,200</td><td class="num" style="text-align: right; font-weight: 600">$7,700</td><td class="num" style="text-align: right">23.9%</td></tr>
+<tr><td style="font-weight: 600">Calcio 1 L</td><td>Coda</td><td class="num" style="text-align: right">96</td><td class="num" style="text-align: right">$17,760</td><td class="num" style="text-align: right; font-weight: 600">$6,240</td><td class="num" style="text-align: right">35.1%</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="card" aria-labelledby="h-inv" style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<h2 id="h-inv" style="font-size: 17px; font-weight: 700; margin-bottom: 8px">Inventario a costo</h2>
+<div class="row"><span style="font-weight: 600">Propio (Mostrador)</span><span class="num" style="font-weight: 600; color: #125D40">$142,600</span></div>
+<div class="row"><span>Consigna Biotexa y Francisco</span><span class="num">$123,100</span></div>
+<div class="row" style="border-bottom: 0"><span>Bodega Ortitec</span><span class="num">$88,300</span></div>
+<span style="font-size: 13px; color: #56635B; margin-top: auto">Solo lo propio es dinero invertido; lo de consigna se paga al venderse.</span>
+</section>
+</div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Abrir caja — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+</style>
+</head>
+<body>
+
+<div style="width: 640px; height: 600px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 460px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Abrir caja</h2>
+<span style="font-size: 14px; color: #56635B">Vie 9 oct 2026 · Mostrador · Encargada</span>
+</div>
+<span style="font-size: 15px">Antes de vender, cuenta el efectivo con el que empiezas el día.</span>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="ac-f">Fondo inicial</label><input id="ac-f" class="field num" value="$1,000.00" style="font-size: 22px; font-weight: 700; min-height: 56px"></div>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7; font-size: 14px; color: #3F4B44">Ayer el corte cerró con <strong class="num" style="color: #15211B">$1,000.00</strong> de fondo para hoy.</div>
+<a class="btn primary" href="Caja.html" style="min-height: 52px; font-size: 16px">Abrir caja y empezar a vender</a>
+<span style="font-size: 13px; color: #56635B">Si el fondo no coincide con el de ayer, el sistema te pedirá una nota.</span>
+</div>
+</div>
+</body>
+</html>

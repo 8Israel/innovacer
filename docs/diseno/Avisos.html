@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Avisos del punto de venta — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;box-sizing:border-box;text-align:center}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.dlg{width:400px;box-sizing:border-box;background:#FFFFFF;border-radius:14px;box-shadow:0 16px 48px rgba(21,33,27,.3);padding:22px;display:flex;flex-direction:column;gap:14px}
+.ic{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:none}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+h2{font-family:Montserrat,sans-serif;font-size:18px;font-weight:700;margin:0}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 560px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 32px">
+<div class="dlg" role="alertdialog" aria-labelledby="a1">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #FFF1D6; color: #7A4A00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 22px; height: 22px"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path></svg></span><h2 id="a1">No alcanza la existencia</h2></div>
+<span style="font-size: 15px">Pediste <strong>8 Ultra Calcio 20 L</strong>, pero en Mostrador solo hay <strong>3</strong>.</span>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7; font-size: 14px">Hay <strong>44</strong> en Consigna Francisco.</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+<a class="btn primary" href="Traspaso.html">Traspasar 5 de la consigna y vender 8</a>
+<a class="btn" href="Main.html">Vender solo 3</a>
+</div>
+</div>
+<div class="dlg" role="alertdialog" aria-labelledby="a2">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #EEF0EE; color: #3F4B44"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 22px; height: 22px"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span><h2 id="a2">Producto sin precio</h2></div>
+<span style="font-size: 15px"><strong>Manguera de riego 16 mm</strong> no tiene precio público, así que no se puede vender.</span>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7; font-size: 14px">Solo el dueño puede ponerle precio.</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+<a class="btn primary" href="Main.html">Quitar de la venta</a>
+<a class="btn" href="Producto.html">Ponerle precio (dueño)</a>
+</div>
+</div>
+<div class="dlg" role="alertdialog" aria-labelledby="a3">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #FBE4E1; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 22px; height: 22px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg></span><h2 id="a3">Rebasa su límite de crédito</h2></div>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7">
+<div class="row"><span style="color: #3F4B44">Límite de Ernesto Castaño</span><span class="num">$50,000.00</span></div>
+<div class="row"><span style="color: #3F4B44">Ya debe</span><span class="num">$3,200.00</span></div>
+<div class="row"><span style="color: #3F4B44">Esta venta</span><span class="num">$48,900.00</span></div>
+<div class="row" style="font-weight: 600; color: #9B2C1F"><span>Se pasa por</span><span class="num">$2,100.00</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+<a class="btn primary" href="PagoMixto.html">Cobrar $2,100 de contado</a>
+<a class="btn" href="Autorizacion.html">Pedir autorización del dueño</a>
+</div>
+</div>
+</div>
+</body>
+</html>

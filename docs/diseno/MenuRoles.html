@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Menú según el rol — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}
+.nav{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:#3F4B44;text-decoration:none;font-size:15px;font-weight:500}
+.nav svg{width:20px;height:20px;flex:none}
+.nav.on{background:#E3EFE7;color:#125D40;font-weight:600}
+.side{width:264px;box-sizing:border-box;background:#FFFFFF;border:1px solid #DDE3DD;border-radius:12px;padding:24px 16px;display:flex;flex-direction:column;gap:24px;align-self:stretch}
+.lbl{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#56635B}
+.user{margin-top:auto;padding:12px;border-radius:8px;background:#F4F6F3;display:flex;flex-direction:column;gap:2px;text-decoration:none;color:#15211B}
+</style>
+</head>
+<body>
+
+<div style="width: 1040px; height: 1000px; box-sizing: border-box; background: #F4F6F3; padding: 40px; display: flex; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span class="lbl">Dueño</span>
+<nav class="side" aria-label="Menú del dueño">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 184px; height: auto; margin: 4px 8px 0">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a class="nav on" href="Main.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Punto de venta</a>
+<a class="nav" href="Ventas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Ventas</a>
+<a class="nav" href="Inventario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path></svg>Inventario</a>
+<a class="nav" href="Traspaso.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg>Traspasos</a>
+<a class="nav" href="Clientes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path></svg>Clientes y cobranza</a>
+<a class="nav" href="Proveedores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 10h4l4 4v2h-8"></path></svg>Proveedores</a>
+<a class="nav" href="Caja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path></svg>Caja</a>
+<a class="nav" href="Facturar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"></path></svg>Facturación</a>
+<a class="nav" href="Reportes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"></path></svg>Reportes</a>
+<a class="nav" href="Configuracion.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>Configuración</a>
+</div>
+<a class="user" href="MiCuenta.html"><span style="font-size: 14px; font-weight: 600">[Nombre del dueño]</span><span style="font-size: 13px; color: #56635B">Dueño · Mi cuenta</span></a>
+</nav>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span class="lbl">Encargada</span>
+<nav class="side" aria-label="Menú de la encargada">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 184px; height: auto; margin: 4px 8px 0">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<a class="nav on" href="Main.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Punto de venta</a>
+<a class="nav" href="Ventas.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Ventas</a>
+<a class="nav" href="Inventario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path></svg>Inventario</a>
+<a class="nav" href="Traspaso.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg>Traspasos</a>
+<a class="nav" href="Clientes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path></svg>Clientes y cobranza</a>
+<a class="nav" href="Proveedores.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 10h4l4 4v2h-8"></path></svg>Proveedores</a>
+<a class="nav" href="Caja.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path></svg>Caja</a>
+<a class="nav" href="Facturar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"></path></svg>Facturación</a>
+</div>
+<a class="user" href="MiCuenta.html"><span style="font-size: 14px; font-weight: 600">[Nombre de la encargada]</span><span style="font-size: 13px; color: #56635B">Encargada · Mi cuenta</span></a>
+</nav>
+</div>
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 12px">
+<span class="lbl">Qué cambia</span>
+<div style="background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; font-size: 15px; line-height: 1.45">
+<span><strong>Reportes y Configuración no aparecen</strong> en el menú de la encargada. Si escribe la dirección a mano, la manda al punto de venta.</span>
+<span><strong>Dentro de las pantallas</strong> se esconden los botones que no puede usar: cambiar precios, cancelar ventas, pagar a proveedores.</span>
+<span><strong>Descuentos extra</strong> siguen visibles, pero piden la contraseña del dueño en el momento.</span>
+<span><strong>Mi cuenta</strong> se abre desde el nombre al pie del menú, para cambiar contraseña o cerrar sesión.</span>
+<span style="font-size: 14px; color: #56635B">Lo que puede hacer cada rol es fijo y se consulta en Configuración.</span>
+</div>
+</div>
+</div>
+</body>
+</html>

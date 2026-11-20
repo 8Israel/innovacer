@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reportes en celular — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}
+button{font:inherit}
+.num{font-variant-numeric:tabular-nums}
+.seg{flex:1 1 0;min-height:44px;border:1px solid #C9D2CB;background:#fff;font-weight:600;font-size:14px;color:#3F4B44}
+.seg.on{background:#125D40;border-color:#125D40;color:#fff}
+.card{background:#FFFFFF;border:1px solid #DDE3DD;border-radius:12px;padding:14px 16px;box-sizing:border-box}
+.k{font-family:Montserrat,sans-serif;font-size:22px;font-weight:700}
+.kl{font-size:12px;font-weight:600;color:#3F4B44}
+.row{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:10px 0;border-bottom:1px solid #EAEEEA;text-decoration:none;color:#15211B}
+h2{font-family:Montserrat,sans-serif;font-size:16px;font-weight:700;margin:0 0 6px}
+</style>
+</head>
+<body>
+
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #F4F6F3; display: flex; flex-direction: column">
+<header style="background: #FFFFFF; border-bottom: 1px solid #DDE3DD; padding: 14px 16px; display: flex; align-items: center; gap: 12px">
+<img src="assets/logo-isotipo.png" alt="" style="width: 32px; height: auto">
+<span style="font-family: Montserrat, sans-serif; font-size: 18px; font-weight: 700; flex: 1">Reportes</span>
+<a href="MiCuenta.html" aria-label="Mi cuenta" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #E3EFE7; color: #125D40; font-weight: 700; text-decoration: none">D</a>
+</header>
+<main style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div role="group" aria-label="Periodo" style="display: flex">
+<button class="seg" style="border-radius: 8px 0 0 8px">Hoy</button><button class="seg" style="border-left: 0">Semana</button><button class="seg on" style="border-radius: 0 8px 8px 0">Mes</button>
+</div>
+<span style="font-size: 13px; color: #56635B; margin-top: -6px">1 al 9 de octubre de 2026</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div class="card"><div class="kl">Ventas</div><div class="k num" style="color: #125D40">$337,680</div></div>
+<div class="card"><div class="kl">Utilidad</div><div class="k num">$85,780</div><div style="font-size: 12px; color: #56635B">25.4%</div></div>
+<div class="card"><div class="kl">Por cobrar</div><div class="k num">$34,250</div></div>
+<div class="card"><div class="kl">Por pagar</div><div class="k num">$169,300</div></div>
+</div>
+<div class="card">
+<h2>Ventas por día</h2>
+<svg viewBox="0 0 640 232" role="img" aria-label="Ventas por día del 1 al 9 de octubre; hoy, con $55,230, es el día más alto" style="width: 100%; height: auto; font-family: 'IBM Plex Sans', sans-serif">
+<g stroke="#E3E8E4"><line x1="64" x2="624" y1="20" y2="20"></line><line x1="64" x2="624" y1="80" y2="80"></line><line x1="64" x2="624" y1="140" y2="140"></line></g>
+<line x1="64" x2="624" y1="200" y2="200" stroke="#9AA59E"></line>
+<g font-size="20" fill="#56635B" text-anchor="end"><text x="56" y="26">60k</text><text x="56" y="146">20k</text></g>
+<g fill="#5E9C7B"><path d="M77 200V89Q77 85 81 85H109Q113 85 113 89V200Z"></path><path d="M139 200V79Q139 75 143 75H171Q175 75 175 79V200Z"></path><path d="M201 200V136Q201 132 205 132H233Q237 132 237 136V200Z"></path><path d="M324 200V60Q324 56 328 56H356Q360 56 360 60V200Z"></path><path d="M386 200V96Q386 92 390 92H418Q422 92 422 96V200Z"></path><path d="M448 200V70Q448 66 452 66H480Q484 66 484 70V200Z"></path><path d="M510 200V50Q510 46 514 46H542Q546 46 546 50V200Z"></path></g>
+<path d="M571 200V38Q571 34 575 34H603Q607 34 607 38V200Z" fill="#125D40"></path>
+<g font-size="20" fill="#56635B" text-anchor="middle"><text x="95" y="226">1</text><text x="219" y="226">3</text><text x="342" y="226">5</text><text x="466" y="226">7</text><text x="589" y="226" font-weight="600" fill="#15211B">9</text></g>
+</svg>
+<span style="font-size: 13px; color: #56635B">Hoy: $55,230, el día más alto del mes</span>
+</div>
+<div class="card">
+<h2>Quién debe más</h2>
+<a class="row" href="EstadoCuenta.html"><span>Ing. Meléndez</span><span class="num" style="font-weight: 600">$18,650</span></a>
+<a class="row" href="EstadoCuenta.html"><span>Francisco Castañón</span><span class="num" style="font-weight: 600">$12,400</span></a>
+<a class="row" href="EstadoCuenta.html" style="border-bottom: 0"><span>Ernesto Castaño</span><span class="num" style="font-weight: 600">$3,200</span></a>
+</div>
+<div class="card">
+<h2>Ventas por destino</h2>
+<div class="row"><span>Mostrador</span><span class="num">$257,380</span></div>
+<div class="row"><span>Reynosa</span><span class="num">$58,400</span></div>
+<div class="row" style="border-bottom: 0"><span>Jalincher</span><span class="num">$21,900</span></div>
+</div>
+<div class="card">
+<h2>Avisos</h2>
+<div class="row"><span>Bajo mínimo en Mostrador</span><a href="Inventario.html" style="font-weight: 600">2 productos</a></div>
+<div class="row" style="border-bottom: 0"><span>Caja de hoy</span><a href="Caja.html" style="font-weight: 600">Abierta</a></div>
+</div>
+<span style="font-size: 13px; color: #56635B; text-align: center">Para el detalle completo, ábrelo en la computadora.</span>
+</main>
+</div>
+</body>
+</html>

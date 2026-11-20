@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Autorización del dueño — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button,select{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div style="width: 640px; height: 640px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="dialog" aria-modal="true" aria-labelledby="d-t" style="width: 480px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; gap: 14px; align-items: center">
+<span style="width: 44px; height: 44px; border-radius: 999px; background: #E8EEF8; color: #1A4F9C; display: flex; align-items: center; justify-content: center; flex: none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 22px; height: 22px"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Necesita autorización del dueño</h2>
+</div>
+<div style="padding: 12px 14px; border-radius: 10px; background: #F7F9F7">
+<div style="font-size: 15px; font-weight: 600; margin-bottom: 6px">Descuento extra de 5% en la venta #1044</div>
+<div class="row"><span style="color: #3F4B44">Total actual</span><span class="num">$8,577.00</span></div>
+<div class="row"><span style="color: #3F4B44">Descuento extra</span><span class="num" style="color: #125D40">−$428.85</span></div>
+<div class="row" style="font-weight: 600"><span>Total con descuento</span><span class="num">$8,148.15</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-u">Usuario que autoriza</label><select id="a-u" class="field"><option>Dueño</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-p">Contraseña</label><input id="a-p" class="field" type="password" value="contrasena"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a-m">Motivo</label><input id="a-m" class="field" value="Lo autorizó por teléfono, cliente frecuente"></div>
+<span style="font-size: 13px; color: #56635B">Queda registrado en la venta quién lo autorizó y por qué.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="Main.html">Cancelar</a>
+<a class="btn primary" href="Main.html">Autorizar</a>
+</div>
+</div>
+</div>
+</body>
+</html>

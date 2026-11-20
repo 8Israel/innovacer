@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Estados vacíos y mensajes — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.empty{flex:1 1 0;background:#FFFFFF;border:1px solid #DDE3DD;border-radius:12px;padding:40px 28px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.ic{width:64px;height:64px;border-radius:999px;background:#E3EFE7;color:#125D40;display:flex;align-items:center;justify-content:center}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;box-shadow:0 8px 24px rgba(21,33,27,.18);font-size:15px;width:400px;box-sizing:border-box}
+.toast a{font-weight:600;white-space:nowrap}
+h3{font-family:Montserrat,sans-serif;font-size:18px;font-weight:700;margin:0}
+.lbl{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#56635B}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #F4F6F3; padding: 40px 48px; display: flex; flex-direction: column; gap: 20px">
+<span class="lbl">Estados vacíos</span>
+<div style="display: flex; gap: 24px">
+<div class="empty">
+<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 30px; height: 30px"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg></span>
+<h3>Aún no hay ventas hoy</h3>
+<span style="font-size: 15px; color: #3F4B44; max-width: 300px">Cuando registres la primera, aquí verás el resumen del día.</span>
+<a class="btn primary" href="Main.html">Nueva venta</a>
+</div>
+<div class="empty">
+<span class="ic" style="background: #EEF0EE; color: #3F4B44"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" style="width: 30px; height: 30px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4M8 11h6"></path></svg></span>
+<h3>No encontramos «ultra potasio 1 L»</h3>
+<span style="font-size: 15px; color: #3F4B44; max-width: 300px">Revisa cómo se escribe o búscalo por su clave. Si es nuevo, dalo de alta.</span>
+<a class="btn" href="Producto.html">Dar de alta el producto</a>
+</div>
+<div class="empty">
+<span class="ic" style="background: #E8EEF8; color: #1A4F9C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" style="width: 30px; height: 30px"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path></svg></span>
+<h3>Sin movimientos todavía</h3>
+<span style="font-size: 15px; color: #3F4B44; max-width: 300px">Agustín no tiene ventas a crédito ni abonos. Sus compras de contado están en Ventas.</span>
+<a class="btn" href="Ventas.html">Ver sus ventas</a>
+</div>
+</div>
+<span class="lbl" style="margin-top: 20px">Mensajes que aparecen y se van solos</span>
+<div style="display: flex; gap: 24px; align-items: flex-start">
+<div class="toast" role="status" style="background: #125D40; color: #FFFFFF">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 20px; height: 20px; flex: none"><path d="M5 12l5 5 9-10"></path></svg>
+<span style="flex: 1">Traspaso registrado: 3 Ultra Calcio a Mostrador</span>
+<a href="Kardex.html" style="color: #FFFFFF">Ver kardex</a>
+</div>
+<div class="toast" role="alert" style="background: #FFFFFF; border: 1px solid #E3B5AE; border-left: 4px solid #9B2C1F">
+<svg viewBox="0 0 24 24" fill="none" stroke="#9B2C1F" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px; flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg>
+<span style="flex: 1">No se pudo imprimir. Revisa que la impresora esté encendida.</span>
+<a href="#">Reintentar</a>
+</div>
+<div class="toast" role="status" style="background: #FFFFFF; border: 1px solid #C79A4A; border-left: 4px solid #B07A1B">
+<svg viewBox="0 0 24 24" fill="none" stroke="#7A4A00" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 20px; height: 20px; flex: none"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"></path><path d="M3 3l18 18"></path></svg>
+<span style="flex: 1">Se perdió la conexión. No cierres la venta; se reintenta sola.</span>
+</div>
+</div>
+<span style="font-size: 14px; color: #56635B">Verde para lo que salió bien, rojo para errores y ámbar para avisos. Siempre con ícono y texto, nunca solo color. Duran 5 segundos; los de error se quedan hasta cerrarlos.</span>
+</div>
+</body>
+</html>

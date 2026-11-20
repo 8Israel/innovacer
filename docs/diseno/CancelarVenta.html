@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cancelar venta — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+input,button,select{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.danger{background:#9B2C1F;border-color:#9B2C1F;color:#fff}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div style="width: 640px; height: 760px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; padding: 32px">
+<div role="alertdialog" aria-modal="true" aria-labelledby="d-t" style="width: 480px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 48px rgba(21,33,27,.3); padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 12px; align-items: center">
+<span style="width: 44px; height: 44px; border-radius: 999px; background: #FBE4E1; color: #9B2C1F; display: flex; align-items: center; justify-content: center; flex: none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 22px; height: 22px"><circle cx="12" cy="12" r="9"></circle><path d="M8 8l8 8"></path></svg></span>
+<h2 id="d-t" style="font-family: Montserrat, sans-serif; font-size: 20px; font-weight: 700; margin: 0">Cancelar venta #1043</h2>
+</div>
+<div style="padding: 12px 14px; border-radius: 10px; background: #F7F9F7">
+<div class="row"><span style="color: #3F4B44">Cliente</span><span>Alejandro Carrasco</span></div>
+<div class="row"><span style="color: #3F4B44">Regresan a Mostrador</span><span>2 Ultra Nitrógeno 20 L</span></div>
+<div class="row" style="font-weight: 600"><span>Se devuelve en efectivo</span><span class="num">$2,500.00</span></div>
+</div>
+<span style="font-size: 14px; color: #3F4B44">La venta no se borra: queda marcada como cancelada, con su motivo, en el historial.</span>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="cv-m">Motivo</label><select id="cv-m" class="field"><option>El cliente se arrepintió</option><option>Venta capturada por error</option><option>Precio equivocado</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="cv-p">Contraseña del dueño</label><input id="cv-p" class="field" type="password" value="contrasena"></div>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a class="btn" href="VentaDetalle.html">No, regresar</a>
+<a class="btn danger" href="Ventas.html">Sí, cancelar venta</a>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iniciar sesión — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6F3;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}a:hover{color:#123A75}
+input,button{font:inherit}
+label{font-size:14px;font-weight:600;color:#3F4B44}
+.field{box-sizing:border-box;width:100%;min-height:48px;border:1px solid #C9D2CB;border-radius:8px;padding:12px 14px;background:#fff;color:#15211B;font-size:16px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:8px;background:#125D40;border:1px solid #125D40;color:#fff;font-weight:600;font-size:16px;text-decoration:none}
+.btn:hover{background:#0E4A33;color:#fff}
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-wrap: wrap; min-height: 900px">
+<div style="flex: 1 1 420px; box-sizing: border-box; background: #E3EFE7; padding: 48px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 28px; text-align: center">
+<img src="assets/logo-isotipo.png" alt="" style="width: 220px; height: auto">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 380px">
+<span style="font-family: Montserrat, sans-serif; font-size: 30px; font-weight: 700; color: #125D40">Innovacer</span>
+<span style="font-size: 17px; color: #2C3A32">Inventario, ventas y cobranza en un solo lugar</span>
+</div>
+</div>
+<main style="flex: 1 1 420px; box-sizing: border-box; padding: 48px 32px; display: flex; align-items: center; justify-content: center">
+<form aria-labelledby="h-login" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 20px">
+<img src="assets/logo-horizontal.png" alt="Innovacer Agrotechnology" style="width: 220px; height: auto">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 id="h-login" style="font-family: Montserrat, sans-serif; font-size: 26px; font-weight: 700; margin: 0">Iniciar sesión</h1>
+<span style="font-size: 15px; color: #56635B">Entra con el usuario que te dio el dueño</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="l-user">Usuario</label><input id="l-user" class="field" value="encargada" autocomplete="username"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="l-pass">Contraseña</label><input id="l-pass" class="field" type="password" value="contrasena" autocomplete="current-password"></div>
+<a class="btn" href="Main.html">Entrar</a>
+<span style="font-size: 14px; color: #56635B">¿Olvidaste tu contraseña? Pídele al dueño que la restablezca desde Configuración.</span>
+</form>
+</main>
+</div>
+</body>
+</html>

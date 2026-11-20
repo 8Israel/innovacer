@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Confirmaciones — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+.num{font-variant-numeric:tabular-nums}
+textarea{font:inherit}
+.field{box-sizing:border-box;width:100%;border:1px solid #C9D2CB;border-radius:8px;padding:10px 12px;background:#fff;color:#15211B;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #C9D2CB;background:#fff;color:#15211B;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.btn.primary{background:#125D40;border-color:#125D40;color:#fff}
+.btn.danger{background:#9B2C1F;border-color:#9B2C1F;color:#fff}
+.dlg{width:400px;box-sizing:border-box;background:#FFFFFF;border-radius:14px;box-shadow:0 16px 48px rgba(21,33,27,.3);padding:22px;display:flex;flex-direction:column;gap:14px}
+h2{font-family:Montserrat,sans-serif;font-size:18px;font-weight:700;margin:0}
+.ic{width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:none}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 600px; box-sizing: border-box; background: #8E9891; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 32px">
+<div class="dlg" role="alertdialog" aria-labelledby="c1">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #FBE4E1; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 22px; height: 22px"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12"></path><path d="M16 13h2"></path></svg></span><h2 id="c1">Cerrar caja con diferencia</h2></div>
+<span style="font-size: 15px">Faltan <strong class="num">$50.00</strong>: debía haber $15,550.00 y contaste $15,500.00.</span>
+<label for="c1n" style="font-size: 13px; font-weight: 600; color: #3F4B44">Explica la diferencia (obligatorio)</label>
+<textarea id="c1n" class="field" rows="2" style="resize: vertical"></textarea>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><a class="btn" href="Caja.html">Volver a contar</a><a class="btn primary" href="CajaHistorial.html">Cerrar caja</a></div>
+</div>
+<div class="dlg" role="alertdialog" aria-labelledby="c2">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #EEF0EE; color: #3F4B44"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 22px; height: 22px"><path d="M3 7l9-4 9 4-9 4z"></path><path d="M3 7v10l9 4 9-4V7"></path></svg></span><h2 id="c2">Desactivar Mirabis 1 L</h2></div>
+<span style="font-size: 15px">Dejará de aparecer en búsquedas y en el punto de venta. Su historial y sus ventas se conservan.</span>
+<div style="padding: 10px 12px; border-radius: 8px; background: #F7F9F7; font-size: 14px">No tiene existencia en ningún almacén, así que se puede desactivar.</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><a class="btn" href="Inventario.html">Cancelar</a><a class="btn danger" href="Inventario.html">Desactivar</a></div>
+</div>
+<div class="dlg" role="alertdialog" aria-labelledby="c3">
+<div style="display: flex; gap: 12px; align-items: center"><span class="ic" style="background: #FBE4E1; color: #9B2C1F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width: 22px; height: 22px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></span><h2 id="c3">Descartar venta pendiente</h2></div>
+<span style="font-size: 15px">La venta de <strong>Ing. Meléndez</strong> con 4 productos por <strong class="num">$6,300.00</strong> se borrará. Como no se había cobrado, no afecta inventario ni caja.</span>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><a class="btn" href="VentasPendientes.html">No, conservar</a><a class="btn danger" href="VentasPendientes.html">Descartar</a></div>
+</div>
+</div>
+</body>
+</html>
