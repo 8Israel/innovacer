@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CashMovement;
+use App\Models\CashMovementCategory;
 use App\Models\CashMovementType;
 use App\Models\CashSession;
 use App\Models\CashSessionStatus;
@@ -10,6 +11,7 @@ use App\Models\PaymentMethod;
 use App\Models\RefundMethod;
 use App\Models\Sale;
 use App\Models\SaleStatus;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -98,8 +100,24 @@ class CashSessionService
         ?string $beneficiary = null,
         ?string $reference = null,
         ?string $note = null,
+        CashMovementCategory $category = CashMovementCategory::Other,
+        ?Supplier $supplier = null,
     ): CashMovement {
         $amount = $this->amount($amount, 'amount', allowZero: false);
+
+        if ($category === CashMovementCategory::SupplierExpense && $supplier === null) {
+            throw ValidationException::withMessages([
+                'supplier_id' => __('Elige el proveedor del pago.'),
+            ]);
+        }
+
+        if ($category !== CashMovementCategory::SupplierExpense && $supplier !== null) {
+            throw ValidationException::withMessages([
+                'supplier_id' => __('Solo un pago a proveedor lleva proveedor; para abonar a lo que se le debe usa Proveedores.'),
+            ]);
+        }
+
+        $beneficiary = filled($beneficiary) ? $beneficiary : $supplier?->name;
 
         if ($type === CashMovementType::Outflow && blank($beneficiary)) {
             throw ValidationException::withMessages([
@@ -107,12 +125,14 @@ class CashSessionService
             ]);
         }
 
-        return DB::transaction(function () use ($user, $type, $concept, $amount, $beneficiary, $reference, $note): CashMovement {
+        return DB::transaction(function () use ($user, $type, $category, $supplier, $concept, $amount, $beneficiary, $reference, $note): CashMovement {
             $session = $this->requireOpen();
 
             return $session->cashMovements()->create([
                 'user_id' => $user->id,
                 'type' => $type,
+                'category' => $category,
+                'supplier_id' => $supplier?->id,
                 'concept' => $concept,
                 'beneficiary' => $beneficiary,
                 'amount' => $amount,
@@ -129,23 +149,63 @@ class CashSessionService
      */
     public function expectedCash(CashSession $session): string
     {
+        return $this->cashBreakdown($session)['expected_cash'];
+    }
+
+    /**
+     * Each part of the expected cash, as the cash count (corte) shows it.
+     *
+     * @return array{opening_cash: string, cash_sales: string, cash_customer_payments: string, inflows: string, outflows: string, cash_refunds: string, cash_supplier_payments: string, expected_cash: string}
+     */
+    public function cashBreakdown(CashSession $session): array
+    {
         $cash = PaymentMethod::Cash;
 
-        $additions = [
-            $session->opening_cash,
-            $this->sum($session->salePayments()->where('method', $cash)),
-            $this->sum($session->customerPayments()->where('method', $cash)),
-            $this->sum($session->cashMovements()->where('type', CashMovementType::Inflow)),
-        ];
-        $subtractions = [
-            $this->sum($session->cashMovements()->where('type', CashMovementType::Outflow)),
-            $this->sum($session->customerReturns()->where('refund_method', RefundMethod::Cash), 'refund_amount'),
-            $this->sum($session->supplierPayments()->where('method', $cash)),
+        $parts = [
+            'opening_cash' => $session->opening_cash,
+            'cash_sales' => $this->sum($session->salePayments()->where('method', $cash)),
+            'cash_customer_payments' => $this->sum($session->customerPayments()->where('method', $cash)),
+            'inflows' => $this->sum($session->cashMovements()->where('type', CashMovementType::Inflow)),
+            'outflows' => $this->sum($session->cashMovements()->where('type', CashMovementType::Outflow)),
+            'cash_refunds' => $this->sum($session->customerReturns()->where('refund_method', RefundMethod::Cash), 'refund_amount'),
+            'cash_supplier_payments' => $this->sum($session->supplierPayments()->where('method', $cash)),
         ];
 
-        $expected = array_reduce($additions, fn (string $carry, string $value) => bcadd($carry, $value, self::SCALE), '0');
+        $added = array_reduce(
+            [$parts['opening_cash'], $parts['cash_sales'], $parts['cash_customer_payments'], $parts['inflows']],
+            fn (string $carry, string $value) => bcadd($carry, $value, self::SCALE),
+            '0',
+        );
 
-        return array_reduce($subtractions, fn (string $carry, string $value) => bcsub($carry, $value, self::SCALE), $expected);
+        $parts['expected_cash'] = array_reduce(
+            [$parts['outflows'], $parts['cash_refunds'], $parts['cash_supplier_payments']],
+            fn (string $carry, string $value) => bcsub($carry, $value, self::SCALE),
+            $added,
+        );
+
+        return $parts;
+    }
+
+    /**
+     * What the session's completed sales brought in, by payment method.
+     *
+     * @return array{cash: string, card: string, transfer: string, credit: string, sold: string, sales_count: int}
+     */
+    public function salesSummary(CashSession $session): array
+    {
+        $completedSales = $session->sales()->where('status', SaleStatus::Completed);
+        $paid = fn (PaymentMethod $method) => $this->sum(
+            $session->salePayments()->where('method', $method)->whereIn('sale_id', (clone $completedSales)->select('id')),
+        );
+
+        return [
+            'cash' => $paid(PaymentMethod::Cash),
+            'card' => $paid(PaymentMethod::Card),
+            'transfer' => $paid(PaymentMethod::Transfer),
+            'credit' => $this->creditTotal($session),
+            'sold' => $this->normalize((clone $completedSales)->sum('total')),
+            'sales_count' => (clone $completedSales)->count(),
+        ];
     }
 
     /**

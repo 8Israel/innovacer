@@ -16,6 +16,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $cash_session_id
  * @property int $user_id
  * @property CashMovementType $type
+ * @property CashMovementCategory $category
+ * @property int|null $supplier_id
  * @property string $concept
  * @property string|null $beneficiary
  * @property string $amount
@@ -25,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['cash_session_id', 'user_id', 'type', 'concept', 'beneficiary', 'amount', 'reference', 'note', 'occurred_at'])]
+#[Fillable(['cash_session_id', 'user_id', 'type', 'category', 'supplier_id', 'concept', 'beneficiary', 'amount', 'reference', 'note', 'occurred_at'])]
 class CashMovement extends Model
 {
     /** @use HasFactory<CashMovementFactory> */
@@ -35,9 +37,18 @@ class CashMovement extends Model
     {
         return [
             'type' => CashMovementType::class,
+            'category' => CashMovementCategory::class,
             'amount' => 'decimal:2',
             'occurred_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The supplier of an expense that is not a debt payment (category supplier_expense).
+     */
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function user(): BelongsTo

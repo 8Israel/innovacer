@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\CashMovement;
+use App\Models\CashMovementCategory;
 use App\Models\CashMovementType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -22,6 +23,7 @@ class CashMovementFactory extends Factory
         return [
             'user_id' => User::factory(),
             'type' => CashMovementType::Outflow,
+            'category' => CashMovementCategory::Expense,
             'concept' => fake()->sentence(3),
             'beneficiary' => fake()->name(),
             'amount' => fake()->randomFloat(2, 50, 2000),

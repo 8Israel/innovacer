@@ -528,6 +528,8 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `cash_session_id` | Sesión de caja | `bigint unsigned` | Sí | — | Relación → `cash_sessions.id` (al borrar: restringir) | Sesión de caja en la que se registró (en ventas: en la que se completó). Vacío si no pasó por la caja. |
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró el movimiento. |
 | `type` | Tipo | `varchar(255)` | No | — | — | Valores: `inflow` (entrada de dinero), `outflow` (salida de dinero). |
+| `category` | Categoría | `varchar(255)` | No | `other` | — | Valores: `supplier_expense` (pago a proveedor que no es deuda, p. ej. un flete), `expense` (gasto), `owner_withdrawal` (retiro del dueño), `other` (otro). Pagar lo que se le debe a un proveedor no va aquí sino en `supplier_payments`, para no restarlo dos veces de la caja. |
+| `supplier_id` | Proveedor | `bigint unsigned` | Sí | — | Relación → `suppliers.id` (al borrar: restringir) | Proveedor del gasto; solo en la categoría `supplier_expense`. |
 | `concept` | Concepto | `varchar(255)` | No | — | — | Para qué fue el dinero. |
 | `beneficiary` | Beneficiario | `varchar(255)` | Sí | — | — | A quién se le dio el dinero. Obligatorio en salidas (se valida en la aplicación). |
 | `amount` | Monto | `decimal(12,2)` | No | — | — | Cantidad de dinero. |

@@ -23,6 +23,9 @@
                 <flux:sidebar.item icon="users" :href="route('customers.index')" :current="request()->routeIs('customers.*')" wire:navigate>
                     {{ __('Clientes y cobranza') }}
                 </flux:sidebar.item>
+                <flux:sidebar.item icon="banknotes" :href="route('cash.index')" :current="request()->routeIs('cash.*')" wire:navigate>
+                    {{ __('Caja') }}
+                </flux:sidebar.item>
                 @can(\App\Models\Permission::Invoice->value)
                     <flux:sidebar.item icon="document-text" :href="route('invoices.index')" :current="request()->routeIs('invoices.*')" wire:navigate>
                         {{ __('Facturación') }}

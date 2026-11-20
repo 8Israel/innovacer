@@ -26,7 +26,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="px-2" data-test="cash-status">
+<a href="{{ route('cash.index') }}" wire:navigate class="block px-2" data-test="cash-status">
     @if ($this->openSession)
         <flux:badge color="green" icon="lock-open" size="sm" class="w-full">
             {{ __('Caja abierta') }} · {{ $this->openSession->opened_at->format('H:i') }}
@@ -36,4 +36,4 @@ new class extends Component {
             {{ __('Caja cerrada') }}
         </flux:badge>
     @endif
-</div>
+</a>

@@ -10,6 +10,8 @@ Route::get('/', function () {
 Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
+    Route::livewire('caja', 'pages::cash.index')->name('cash.index');
+
     Route::livewire('products', 'pages::products')->name('products.index');
     Route::livewire('customers', 'pages::customers')->name('customers.index');
 
