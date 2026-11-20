@@ -469,3 +469,47 @@ test('it refuses to cancel a sale that already has customer payments applied', f
         ->toThrow(failsOn('sale'));
     expect($sale->fresh()->status)->toBe(SaleStatus::Completed);
 });
+
+test('it quotes a cart without saving anything', function () {
+    $customer = Customer::factory()->create(['discount_rate' => 0.10]);
+    $product = Product::factory()->create(['unit_price' => 1000, 'tax_rate' => 0.16, 'ieps_rate' => 0.08]);
+
+    $quote = app(SaleService::class)->quote([['product_id' => $product->id, 'quantity' => '1']], $customer, '0.05');
+
+    expect($quote['lines'][0]['product']->is($product))->toBeTrue();
+    expect($quote['lines'][0]['total'])->toBe('1071.14');
+    expect(collect($quote)->only(['subtotal', 'discount_total', 'ieps_total', 'tax_total', 'total'])->all())->toBe([
+        'subtotal' => '1000.00',
+        'discount_total' => '145.00',
+        'tax_total' => '147.74',
+        'ieps_total' => '68.40',
+        'total' => '1071.14',
+    ]);
+    expect(Sale::count())->toBe(0);
+});
+
+test('it sells at the counter in one step', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
+    $stock = stockLot($product, $warehouse, '10', '2026-01-10');
+
+    $sale = app(SaleService::class)->sell(User::factory()->create(), $warehouse, [['product_id' => $product->id, 'quantity' => '2']], [cash('232')]);
+
+    expect($sale->status)->toBe(SaleStatus::Completed);
+    expect($sale->held_at)->toBeNull();
+    expect($sale->folio)->toBe('V-000001');
+    expect($stock->fresh()->quantity)->toBe('8.000');
+});
+
+test('it leaves nothing behind when a counter sale cannot be charged', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
+    stockLot($product, $warehouse, '1', '2026-01-10');
+
+    expect(fn () => app(SaleService::class)->sell(User::factory()->create(), $warehouse, [['product_id' => $product->id, 'quantity' => '2']], [cash('232')]))
+        ->toThrow(failsOn('items'));
+    expect(Sale::count())->toBe(0);
+    expect(SaleItem::count())->toBe(0);
+});

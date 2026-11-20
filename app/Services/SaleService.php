@@ -60,12 +60,85 @@ class SaleService
         ?string $notes = null,
         ?string $holdNote = null,
     ): Sale {
+        return $this->createPending($user, $warehouse, $items, $customer, $destination, $discountRate, $notes, held: true, holdNote: $holdNote);
+    }
+
+    /**
+     * Ring up a sale at the counter: create it and charge it in one transaction, so a
+     * failed charge (stock, credit, register) leaves nothing behind.
+     *
+     * @param  list<array{product_id: int, quantity: string, price_type?: PriceType}>  $items
+     * @param  list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>  $payments
+     */
+    public function sell(
+        User $user,
+        Warehouse $warehouse,
+        array $items,
+        array $payments,
+        ?Customer $customer = null,
+        ?CustomerDestination $destination = null,
+        string $discountRate = '0',
+        ?string $notes = null,
+        ?SaleAuthorization $authorization = null,
+    ): Sale {
+        return DB::transaction(fn (): Sale => $this->complete(
+            $this->createPending($user, $warehouse, $items, $customer, $destination, $discountRate, $notes, held: false),
+            $user,
+            $payments,
+            $authorization,
+        ));
+    }
+
+    /**
+     * Price a cart with current prices without saving anything, for live totals.
+     *
+     * @param  list<array{product_id: int, quantity: string, price_type?: PriceType}>  $items
+     * @return array{lines: list<array{product: Product, quantity: string, price_type: PriceType, unit_price: string, discount_rate: string, discount_amount: string, subtotal: string, iva_rate: string, iva_amount: string, ieps_rate: string, ieps_amount: string, total: string}>, subtotal: string, discount_total: string, tax_total: string, ieps_total: string, total: string}
+     */
+    public function quote(array $items, ?Customer $customer = null, string $discountRate = '0'): array
+    {
+        $discountRate = $this->rate($discountRate);
+        $customerRate = $customer?->discount_rate ?? '0';
+
+        $lines = array_map(fn (array $line): array => [
+            'product' => $line[0],
+            'quantity' => $line[1],
+            'price_type' => $line[2],
+            ...$this->priceLine($line[0], $line[1], $line[2], $customerRate, $discountRate),
+        ], $this->validateItems($items));
+
+        $sum = fn (string $key): string => array_reduce($lines, fn (string $carry, array $line) => bcadd($carry, $line[$key], self::MONEY), '0.00');
+
+        return [
+            'lines' => $lines,
+            'subtotal' => $sum('subtotal'),
+            'discount_total' => $sum('discount_amount'),
+            'tax_total' => $sum('iva_amount'),
+            'ieps_total' => $sum('ieps_amount'),
+            'total' => $sum('total'),
+        ];
+    }
+
+    /**
+     * @param  list<array{product_id: int, quantity: string, price_type?: PriceType}>  $items
+     */
+    private function createPending(
+        User $user,
+        Warehouse $warehouse,
+        array $items,
+        ?Customer $customer,
+        ?CustomerDestination $destination,
+        string $discountRate,
+        ?string $notes,
+        bool $held,
+        ?string $holdNote = null,
+    ): Sale {
         $this->ensureSellable($warehouse);
         $this->ensureDestinationBelongsTo($destination, $customer);
         $discountRate = $this->rate($discountRate);
         $lines = $this->validateItems($items);
 
-        return DB::transaction(function () use ($user, $warehouse, $lines, $customer, $destination, $discountRate, $notes, $holdNote): Sale {
+        return DB::transaction(function () use ($user, $warehouse, $lines, $customer, $destination, $discountRate, $notes, $held, $holdNote): Sale {
             $sale = Sale::create([
                 'customer_id' => $customer?->id,
                 'customer_destination_id' => $destination?->id,
@@ -74,7 +147,7 @@ class SaleService
                 'status' => SaleStatus::Pending,
                 'discount_rate' => $discountRate,
                 'notes' => $notes,
-                'held_at' => now(),
+                'held_at' => $held ? now() : null,
                 'hold_note' => $holdNote,
             ]);
 

@@ -39,7 +39,7 @@ new #[Layout('layouts::auth'), Title('Cambiar contraseña')] class extends Compo
 
         $sessions->closeOthers($user, session()->getId());
 
-        $this->redirectRoute('dashboard', navigate: true);
+        $this->redirectRoute('pos.index', navigate: true);
     }
 }; ?>
 

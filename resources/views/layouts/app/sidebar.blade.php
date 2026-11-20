@@ -14,9 +14,11 @@
 
             {{-- Sections from docs/diseno/MenuRoles.html; each appears once its screen exists. --}}
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Inicio') }}
-                </flux:sidebar.item>
+                @can(\App\Models\Permission::Sell->value)
+                    <flux:sidebar.item icon="shopping-cart" :href="route('pos.index')" :current="request()->routeIs('pos.*')" wire:navigate>
+                        {{ __('Punto de venta') }}
+                    </flux:sidebar.item>
+                @endcan
                 <flux:sidebar.item icon="cube" :href="route('products.index')" :current="request()->routeIs('products.*')" wire:navigate>
                     {{ __('Productos') }}
                 </flux:sidebar.item>

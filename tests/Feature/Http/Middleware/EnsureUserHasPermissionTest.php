@@ -11,7 +11,7 @@ beforeEach(function () {
 test('it sends the clerk back to the start screen from owner-only sections', function (string $uri) {
     $this->actingAs(User::factory()->create())
         ->get($uri)
-        ->assertRedirect(route('dashboard'))
+        ->assertRedirect(route('pos.index'))
         ->assertSessionHas('error');
 })->with(['/_test/reports', '/_test/configuration']);
 
@@ -30,5 +30,5 @@ test('it answers 403 to a json request without the permission', function () {
 test('it denies every permission to an inactive owner', function () {
     $this->actingAs(User::factory()->owner()->inactive()->create())
         ->get('/_test/reports')
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('pos.index'));
 });

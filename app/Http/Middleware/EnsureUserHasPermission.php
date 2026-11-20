@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Route guard for a fixed role permission (see App\Models\Permission). A user
- * without it is sent back to the start screen (the dashboard, until the point
- * of sale exists) instead of seeing an error page.
+ * without it is sent back to the start screen (the point of sale) instead of
+ * seeing an error page.
  */
 class EnsureUserHasPermission
 {
@@ -23,6 +23,6 @@ class EnsureUserHasPermission
             abort(Response::HTTP_FORBIDDEN);
         }
 
-        return redirect()->route('dashboard')->with('error', __('No tienes permiso para entrar a esa sección.'));
+        return redirect()->route('pos.index')->with('error', __('No tienes permiso para entrar a esa sección.'));
     }
 }

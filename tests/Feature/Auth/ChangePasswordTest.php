@@ -23,7 +23,7 @@ test('it replaces a temporary password and closes the other sessions', function 
         ->set('password_confirmation', 'nueva-contraseña-segura')
         ->call('changePassword')
         ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('pos.index'));
 
     $user->refresh();
     expect($user->must_change_password)->toBeFalse();

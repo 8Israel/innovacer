@@ -4,12 +4,13 @@ use App\Http\Controllers\InvoiceDownloadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
+    return auth()->check() ? redirect()->route('pos.index') : redirect()->route('login');
 })->name('home');
 
 Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
+    Route::livewire('punto-de-venta', 'pages::pos.index')->middleware('permission:sell')->name('pos.index');
     Route::livewire('caja', 'pages::cash.index')->name('cash.index');
 
     Route::livewire('products', 'pages::products')->name('products.index');
