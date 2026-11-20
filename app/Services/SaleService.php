@@ -344,6 +344,12 @@ class SaleService
             ]);
         }
 
+        if ($product->tax_rate === null) {
+            throw ValidationException::withMessages([
+                'items' => __('El producto :product no tiene tasa de IVA; captúrala en el producto antes de venderlo.', ['product' => $product->name]),
+            ]);
+        }
+
         $discountRate = $this->roundHalfUp(
             bcsub('1', bcmul(bcsub('1', $customerRate, self::RATE), bcsub('1', $saleRate, self::RATE), 8), 8),
             self::RATE,

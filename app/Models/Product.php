@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $brand
  * @property string|null $presentation
  * @property int|null $category_id
+ * @property int|null $supplier_id The main supplier; each lot keeps who actually brought it.
  * @property string $unit
  * @property string|null $description
  * @property string $sku
@@ -25,7 +26,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $reference_cost
  * @property string|null $unit_price
  * @property string|null $wholesale_price
- * @property string $tax_rate
+ * @property string|null $wholesale_min_quantity Wholesale price applies from this many units.
+ * @property string|null $tax_rate IVA rate; chosen when the product is created.
  * @property string|null $ieps_rate
  * @property string|null $product_key
  * @property string|null $product_key_name
@@ -35,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'brand', 'presentation', 'category_id', 'unit', 'description', 'sku', 'barcode', 'reference_cost', 'unit_price', 'wholesale_price', 'tax_rate', 'ieps_rate', 'product_key', 'product_key_name', 'unit_key', 'unit_name', 'is_active'])]
+#[Fillable(['name', 'brand', 'presentation', 'category_id', 'supplier_id', 'unit', 'description', 'sku', 'barcode', 'reference_cost', 'unit_price', 'wholesale_price', 'wholesale_min_quantity', 'tax_rate', 'ieps_rate', 'product_key', 'product_key_name', 'unit_key', 'unit_name', 'is_active'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -47,6 +49,7 @@ class Product extends Model
             'reference_cost' => 'decimal:2',
             'unit_price' => 'decimal:2',
             'wholesale_price' => 'decimal:2',
+            'wholesale_min_quantity' => 'decimal:3',
             'tax_rate' => 'decimal:4',
             'ieps_rate' => 'decimal:4',
             'is_active' => 'boolean',
@@ -58,9 +61,19 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function lots(): HasMany
     {
         return $this->hasMany(Lot::class);
+    }
+
+    public function stockMinimums(): HasMany
+    {
+        return $this->hasMany(StockMinimum::class);
     }
 
     public function stocks(): HasMany

@@ -19,6 +19,11 @@
                         {{ __('Punto de venta') }}
                     </flux:sidebar.item>
                 @endcan
+                @can(\App\Models\Permission::ManageInventory->value)
+                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.*')" wire:navigate>
+                        {{ __('Inventario') }}
+                    </flux:sidebar.item>
+                @endcan
                 <flux:sidebar.item icon="cube" :href="route('products.index')" :current="request()->routeIs('products.*')" wire:navigate>
                     {{ __('Productos') }}
                 </flux:sidebar.item>

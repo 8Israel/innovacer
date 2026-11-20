@@ -18,6 +18,10 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     });
     Route::livewire('caja', 'pages::cash.index')->name('cash.index');
 
+    Route::middleware('permission:manage_inventory')->group(function () {
+        Route::livewire('inventario', 'pages::inventory.index')->name('inventory.index');
+    });
+
     Route::livewire('products', 'pages::products')->name('products.index');
     Route::livewire('customers', 'pages::customers')->name('customers.index');
 
