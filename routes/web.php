@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\InvoiceDownloadController;
 use App\Http\Controllers\SaleDocumentController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::livewire('clientes', 'pages::customers.index')->name('customers.index');
     Route::livewire('clientes/nuevo', 'pages::customers.show')->name('customers.create');
     Route::livewire('clientes/{customer}', 'pages::customers.show')->name('customers.show');
+    Route::livewire('clientes/{customer}/estado-de-cuenta', 'pages::customers.statement')->name('customers.statement');
+    Route::get('clientes/{customer}/estado-de-cuenta/imprimir', CustomerStatementController::class)->name('customers.statement.print');
 
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
     Route::livewire('invoices/create', 'pages::invoices.create')->name('invoices.create');

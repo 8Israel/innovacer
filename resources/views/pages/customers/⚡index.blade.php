@@ -154,7 +154,7 @@ new #[Title('Clientes')] class extends Component {
                     @endphp
                     <flux:table.row :key="$customer->id">
                         <flux:table.cell>
-                            <flux:link :href="route('customers.show', $customer)" wire:navigate class="font-medium">{{ $customer->name }}</flux:link>
+                            <flux:link :href="route('customers.statement', $customer)" wire:navigate class="font-medium">{{ $customer->name }}</flux:link>
                             <span class="block text-sm text-zinc-500">{{ $detail }}</span>
                         </flux:table.cell>
                         <flux:table.cell>

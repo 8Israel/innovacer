@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Concerns\RoundsDecimals;
 use App\Models\Customer;
 use App\Models\CustomerDestination;
+use App\Models\CustomerPaymentAllocation;
 use App\Models\RefundMethod;
 use App\Models\Sale;
 use App\Models\SaleStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -73,6 +75,103 @@ class CustomerBalanceService
             ->each(fn (Sale $sale) => $sale->setAttribute('pending', $this->pendingOf($sale)))
             ->filter(fn (Sale $sale) => bccomp($sale->pending, '0', self::MONEY) === 1)
             ->values();
+    }
+
+    /**
+     * The customer's completed sales that went (at least partly) on credit, newest
+     * first, with what was charged on credit, what has been paid since, what is
+     * pending and when it was settled.
+     *
+     * @return Collection<int, array{sale: Sale, on_credit: string, paid: string, pending: string, settled_at: Carbon|null}>
+     */
+    public function creditSales(Customer $customer): Collection
+    {
+        return $this->completedSales($customer->sales())
+            ->with(['customerDestination', 'paymentAllocations.customerPayment', 'customerReturns'])
+            ->orderByDesc('sold_at')
+            ->get()
+            ->map(function (Sale $sale): array {
+                $onCredit = bcsub($sale->total, $this->decimal($sale->getAttribute('payments_sum_amount'), self::MONEY), self::MONEY);
+                $pending = $this->pendingOf($sale);
+                $settledAt = bccomp($pending, '0', self::MONEY) <= 0
+                    ? collect([
+                        ...$sale->paymentAllocations->map(fn (CustomerPaymentAllocation $allocation) => $allocation->customerPayment->paid_at),
+                        ...$sale->customerReturns->where('refund_method', RefundMethod::AccountCredit)->pluck('returned_at'),
+                    ])->max()
+                    : null;
+
+                return [
+                    'sale' => $sale,
+                    'on_credit' => $onCredit,
+                    'paid' => bcsub($onCredit, $pending, self::MONEY),
+                    'pending' => $pending,
+                    'settled_at' => $settledAt,
+                ];
+            })
+            ->filter(fn (array $row) => bccomp($row['on_credit'], '0', self::MONEY) === 1)
+            ->values();
+    }
+
+    /**
+     * The customer's account movements in date order: what each sale left on credit
+     * (charge), customer payments and returns credited to the account (payments),
+     * with the running balance of their account. Optionally only one account.
+     *
+     * @return Collection<int, array{date: Carbon, concept: string, account: string|null, charge: string, payment: string, balance: string}>
+     */
+    public function ledger(Customer $customer, ?CustomerDestination $destination = null): Collection
+    {
+        $entries = collect();
+
+        foreach ($this->creditSales($customer) as $row) {
+            $sale = $row['sale'];
+            $account = $sale->customerDestination;
+
+            if ($destination !== null && $account?->id !== $destination->id) {
+                continue;
+            }
+
+            $entries->push(['date' => $sale->sold_at, 'order' => 0, 'concept' => __('Venta :folio', ['folio' => $sale->folio]), 'account' => $account, 'charge' => $row['on_credit'], 'payment' => '0.00']);
+
+            foreach ($sale->paymentAllocations->groupBy('customer_payment_id') as $allocations) {
+                $payment = $allocations->first()->customerPayment;
+                $entries->push([
+                    'date' => $payment->paid_at,
+                    'order' => 1,
+                    'concept' => collect([
+                        __('Abono · :method', ['method' => mb_strtolower($payment->method->label())]),
+                        __('aplicado a :folio', ['folio' => $sale->folio]),
+                        $payment->reference ? __('ref. :reference', ['reference' => $payment->reference]) : null,
+                    ])->filter()->join(' · '),
+                    'account' => $account,
+                    'charge' => '0.00',
+                    'payment' => $allocations->reduce(fn (string $carry, CustomerPaymentAllocation $allocation) => bcadd($carry, $allocation->amount, self::MONEY), '0.00'),
+                ]);
+            }
+
+            foreach ($sale->customerReturns->where('refund_method', RefundMethod::AccountCredit) as $return) {
+                $entries->push(['date' => $return->returned_at, 'order' => 1, 'concept' => __('Devolución :folio', ['folio' => $return->folio]), 'account' => $account, 'charge' => '0.00', 'payment' => $return->refund_amount]);
+            }
+        }
+
+        $balances = [];
+
+        return $entries
+            ->sortBy([['date', 'asc'], ['order', 'asc']])
+            ->values()
+            ->map(function (array $entry) use (&$balances): array {
+                $key = $entry['account']?->id ?? 0;
+                $balances[$key] = bcsub(bcadd($balances[$key] ?? '0', $entry['charge'], self::MONEY), $entry['payment'], self::MONEY);
+
+                return [
+                    'date' => $entry['date'],
+                    'concept' => $entry['concept'],
+                    'account' => $entry['account']?->name,
+                    'charge' => $entry['charge'],
+                    'payment' => $entry['payment'],
+                    'balance' => $balances[$key],
+                ];
+            });
     }
 
     /**
