@@ -7,6 +7,14 @@ enum UserRole: string
     case Owner = 'owner';
     case Clerk = 'clerk';
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Owner => __('Dueño'),
+            self::Clerk => __('Encargada'),
+        };
+    }
+
     /**
      * Permissions are fixed per role: the owner can do everything; the clerk
      * cannot cancel sales, pay suppliers, see reports or change settings.
