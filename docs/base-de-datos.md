@@ -1,6 +1,6 @@
 # Base de datos — Sistema de Inventario y Punto de Venta
 
-Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
+Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
 
 ## Cómo leer este documento
 
@@ -40,6 +40,7 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 - **Caja:** [`cash_movements`](#cash_movements), [`cash_sessions`](#cash_sessions)
 - **Proveedores:** [`supplier_payments`](#supplier_payments), [`supplier_payment_allocations`](#supplier_payment_allocations)
 - **Facturación:** [`invoices`](#invoices), [`invoice_items`](#invoice_items), [`invoice_sale`](#invoice_sale)
+- **Configuración:** [`settings`](#settings)
 - **Tablas internas de Laravel:** [`migrations`](#migrations), [`cache`](#cache), [`cache_locks`](#cache_locks), [`jobs`](#jobs), [`job_batches`](#job_batches), [`failed_jobs`](#failed_jobs)
 
 ---
@@ -667,6 +668,22 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 **Índices combinados:**
 
 - `invoice_id` + `sale_id` — Único (no se puede repetir la combinación)
+
+---
+
+## Configuración
+
+### settings
+
+**Datos del negocio.** Valores que salen en el ticket, la nota de venta y la factura, y que se editan en Configuración. En el código se leen con `setting('business_phone')`; se guardan en caché y la caché se limpia al guardarlos.
+
+| Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
+|---|---|---|---|---|---|---|
+| `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
+| `key` | Llave | `varchar(255)` | No | — | Único | Nombre del dato: `business_name` (nombre del negocio), `business_address` (dirección), `business_phone` (teléfono), `business_rfc` (RFC del negocio), `ticket_printer_width` (ancho de la impresora de tickets: `80` o `58` mm). |
+| `value` | Valor | `text` | Sí | — | — | El dato guardado. Vacío si todavía no se captura. |
+| `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
+| `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
 
 ---
 

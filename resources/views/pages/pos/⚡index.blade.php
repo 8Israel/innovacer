@@ -56,7 +56,7 @@ new #[Title('Punto de venta')] class extends Component {
     public bool $new_customer_credit = false;
     public string $new_destination_name = '';
 
-    /** @var array{folio: string, customer: string, total: string, change: string|null}|null */
+    /** @var array{id: int, folio: string, customer: string, total: string, change: string|null}|null */
     public ?array $registeredSale = null;
 
     /** Extra discount for this sale, in percent; it needs an authorization. */
@@ -564,6 +564,7 @@ new #[Title('Punto de venta')] class extends Component {
         });
 
         $this->registeredSale = [
+            'id' => $sale->id,
             'folio' => $sale->folio,
             'customer' => collect([$this->customer?->name ?? __('Público en general'), $sale->customerDestination?->name])->filter()->join(' · '),
             'total' => $sale->total,
@@ -1151,6 +1152,10 @@ new #[Title('Punto de venta')] class extends Component {
                         <flux:heading size="xl" class="tabular-nums">{{ $money($registeredSale['change']) }}</flux:heading>
                     </div>
                 @endif
+                <div class="grid grid-cols-2 gap-2">
+                    <flux:button icon="printer" :href="route('sales.ticket', $registeredSale['id'])" target="_blank" data-test="print-ticket-button">{{ __('Imprimir ticket') }}</flux:button>
+                    <flux:button icon="document-text" :href="route('sales.note', $registeredSale['id'])" target="_blank">{{ __('Nota de venta') }}</flux:button>
+                </div>
                 <flux:modal.close>
                     <flux:button variant="primary" class="w-full">{{ __('Nueva venta') }}</flux:button>
                 </flux:modal.close>

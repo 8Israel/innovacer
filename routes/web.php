@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvoiceDownloadController;
+use App\Http\Controllers\SaleDocumentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -11,6 +12,10 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
     Route::livewire('punto-de-venta', 'pages::pos.index')->middleware('permission:sell')->name('pos.index');
+    Route::middleware('permission:sell')->group(function () {
+        Route::get('ventas/{sale}/ticket', [SaleDocumentController::class, 'ticket'])->name('sales.ticket');
+        Route::get('ventas/{sale}/nota', [SaleDocumentController::class, 'note'])->name('sales.note');
+    });
     Route::livewire('caja', 'pages::cash.index')->name('cash.index');
 
     Route::livewire('products', 'pages::products')->name('products.index');

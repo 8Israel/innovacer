@@ -69,6 +69,11 @@ class Sale extends Model
         return $this->status === SaleStatus::Pending;
     }
 
+    public function isCanceled(): bool
+    {
+        return $this->status === SaleStatus::Canceled;
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
