@@ -48,7 +48,7 @@ class Customer extends Model
 
     public function hasCredit(): bool
     {
-        return $this->credit_enabled;
+        return (bool) $this->credit_enabled;
     }
 
     public function destinations(): HasMany

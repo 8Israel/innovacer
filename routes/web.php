@@ -27,7 +27,9 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     });
 
     Route::livewire('products', 'pages::products')->name('products.index');
-    Route::livewire('customers', 'pages::customers')->name('customers.index');
+    Route::livewire('clientes', 'pages::customers.index')->name('customers.index');
+    Route::livewire('clientes/nuevo', 'pages::customers.show')->name('customers.create');
+    Route::livewire('clientes/{customer}', 'pages::customers.show')->name('customers.show');
 
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
     Route::livewire('invoices/create', 'pages::invoices.create')->name('invoices.create');

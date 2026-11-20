@@ -54,18 +54,19 @@ class CustomerBalanceService
 
     /**
      * Completed sales of a customer's account that still owe something, oldest first,
-     * each with its "pending" attribute. Without a destination, the sales that have none.
+     * each with its "pending" attribute. Without a destination, the sales that have
+     * none — or every sale of the customer with $allAccounts.
      *
      * @return Collection<int, Sale>
      */
-    public function salesWithBalance(Customer $customer, ?CustomerDestination $destination = null): Collection
+    public function salesWithBalance(Customer $customer, ?CustomerDestination $destination = null, bool $allAccounts = false): Collection
     {
         return $this->completedSales($customer->sales())
-            ->when(
+            ->when(! $allAccounts, fn (Builder $query) => $query->when(
                 $destination,
                 fn (Builder $query) => $query->where('customer_destination_id', $destination->id),
                 fn (Builder $query) => $query->whereNull('customer_destination_id'),
-            )
+            ))
             ->orderBy('sold_at')
             ->orderBy('id')
             ->get()

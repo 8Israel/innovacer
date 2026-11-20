@@ -24,6 +24,9 @@ class CustomerFactory extends Factory
             'tax_system' => '601',
             'cfdi_use' => 'G03',
             'zip_code' => fake()->numerify('#####'),
+            'credit_enabled' => false,
+            'discount_rate' => 0,
+            'is_active' => true,
         ];
     }
 
