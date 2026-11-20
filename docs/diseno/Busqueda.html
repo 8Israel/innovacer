@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Resultados de búsqueda — Innovacer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#15211B}
+a{color:#1A4F9C}
+.num{font-variant-numeric:tabular-nums}
+input,button{font:inherit}
+label{font-size:13px;font-weight:600;color:#3F4B44}
+.res{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid #EAEEEA;text-decoration:none;color:#15211B}
+.res:hover{background:#F1F7F3}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+kbd{font-family:inherit;font-size:12px;font-weight:600;border:1px solid #C9D2CB;border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:#fff;color:#3F4B44}
+</style>
+</head>
+<body>
+
+<div style="width: 900px; height: 600px; box-sizing: border-box; background: #F4F6F3; padding: 32px; display: flex; flex-direction: column; gap: 6px">
+<label for="b-q">Agregar producto</label>
+<div style="position: relative">
+<input id="b-q" type="search" value="ultra" style="box-sizing: border-box; width: 100%; min-height: 52px; border: 2px solid #125D40; border-radius: 8px; padding: 10px 12px 10px 44px; font-size: 16px; background: #fff; color: #15211B; box-shadow: 0 0 0 4px rgba(18,93,64,.15)">
+<svg viewBox="0 0 24 24" fill="none" stroke="#56635B" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 14px; top: 16px; width: 20px; height: 20px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+</div>
+<div role="listbox" aria-label="Productos encontrados" style="background: #FFFFFF; border: 1px solid #DDE3DD; border-radius: 12px; box-shadow: 0 12px 32px rgba(21,33,27,.16); overflow: hidden; margin-top: 4px">
+<a class="res" href="Main.html" role="option" aria-selected="true" style="background: #E3EFE7; border-left: 4px solid #125D40">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600"><mark style="background: none; color: #125D40">Ultra</mark> Nitrógeno 20 L</span><span style="font-size: 13px; color: #56635B">UNI-20 · Biotexa</span></div>
+<span class="chip num" style="background: #FFFFFF; color: #125D40">Mostrador 12</span>
+<span class="num" style="font-weight: 600; width: 96px; text-align: right">$1,250.00</span>
+<kbd>Enter</kbd>
+</a>
+<a class="res" href="Main.html" role="option" aria-selected="false">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600"><mark style="background: none; color: #125D40">Ultra</mark> Magnesio 20 L</span><span style="font-size: 13px; color: #56635B">UMG-20 · Ortitec</span></div>
+<span class="chip num" style="background: #FFF1D6; color: #7A4A00">Mostrador 6 · bajo mínimo</span>
+<span class="num" style="font-weight: 600; width: 96px; text-align: right">$1,480.00</span>
+<span style="width: 50px"></span>
+</a>
+<a class="res" href="Traspaso.html" role="option" aria-selected="false">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600"><mark style="background: none; color: #125D40">Ultra</mark> Calcio 20 L</span><span style="font-size: 13px; color: #56635B">UCA-20 · Biotexa · hay 44 en Consigna Francisco</span></div>
+<span class="chip num" style="background: #FFF1D6; color: #7A4A00">Mostrador 3</span>
+<span class="num" style="font-weight: 600; width: 96px; text-align: right">$1,320.00</span>
+<span style="width: 50px"></span>
+</a>
+<div class="res" role="option" aria-selected="false" aria-disabled="true" style="color: #6B756F">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600"><mark style="background: none; color: #6B756F">Ultra</mark> Potasio 20 L</span><span style="font-size: 13px">UPO-20 · Biotexa</span></div>
+<span class="chip" style="background: #FBE4E1; color: #9B2C1F">Agotado en todos</span>
+<span class="num" style="width: 96px; text-align: right">$1,190.00</span>
+<span style="width: 50px"></span>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #F7F9F7; font-size: 13px; color: #56635B">
+<span><kbd>↑</kbd> <kbd>↓</kbd> moverse · <kbd>Enter</kbd> agregar · <kbd>Esc</kbd> cerrar</span>
+<span>4 resultados</span>
+</div>
+</div>
+</div>
+</body>
+</html>
