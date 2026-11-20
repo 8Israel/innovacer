@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
+ * A customer. Without credit_enabled every sale must be paid in full; with it,
+ * an empty credit_limit means credit without a limit.
+ *
  * @property int $id
  * @property string $name
  * @property string|null $rfc
@@ -19,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $tax_system
  * @property string|null $cfdi_use
  * @property string|null $zip_code
+ * @property bool $credit_enabled
  * @property string|null $credit_limit
  * @property string $discount_rate
  * @property bool $is_active
@@ -26,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'rfc', 'email', 'phone', 'address', 'tax_system', 'cfdi_use', 'zip_code', 'credit_limit', 'discount_rate', 'is_active'])]
+#[Fillable(['name', 'rfc', 'email', 'phone', 'address', 'tax_system', 'cfdi_use', 'zip_code', 'credit_enabled', 'credit_limit', 'discount_rate', 'is_active'])]
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
@@ -35,10 +39,16 @@ class Customer extends Model
     protected function casts(): array
     {
         return [
+            'credit_enabled' => 'boolean',
             'credit_limit' => 'decimal:2',
             'discount_rate' => 'decimal:4',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function hasCredit(): bool
+    {
+        return $this->credit_enabled;
     }
 
     public function destinations(): HasMany

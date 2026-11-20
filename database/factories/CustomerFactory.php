@@ -26,4 +26,15 @@ class CustomerFactory extends Factory
             'zip_code' => fake()->numerify('#####'),
         ];
     }
+
+    /**
+     * Indicate that the customer may buy on credit, without a limit unless one is given.
+     */
+    public function withCredit(?string $limit = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'credit_enabled' => true,
+            'credit_limit' => $limit,
+        ]);
+    }
 }

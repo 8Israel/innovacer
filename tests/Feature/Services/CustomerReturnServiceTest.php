@@ -16,7 +16,7 @@ use App\Services\CustomerReturnService;
 use App\Services\SaleService;
 
 /**
- * Charges a cash sale of 6 Calcio 1 L at $185 with the customer's 10 % discount ($999.00).
+ * Charges a cash sale of 6 Calcio 1 L at $185, paid in full ($999.00 with a 10 % customer discount).
  *
  * @return array{0: Sale, 1: Product, 2: Warehouse, 3: CashSession}
  */
@@ -28,8 +28,7 @@ function soldCalcio(?Customer $customer = null): array
     stockLot($calcio, $mostrador, '10', '2026-09-28');
     $service = app(SaleService::class);
     $sale = $service->hold(User::factory()->create(), $mostrador, [['product_id' => $calcio->id, 'quantity' => '6']], $customer);
-    $paid = $customer === null ? '1110' : '999';
-    $sale = $service->complete($sale, User::factory()->create(), [['method' => PaymentMethod::Cash, 'amount' => $paid]]);
+    $sale = $service->complete($sale, User::factory()->create(), [['method' => PaymentMethod::Cash, 'amount' => $sale->total]]);
 
     return [$sale, $calcio, $mostrador, $session];
 }
@@ -94,7 +93,7 @@ test('it refuses to return more than what was sold', function () {
 
 test('it refuses a cash refund without an open register', function () {
     [$sale, $calcio, $mostrador] = soldCalcio(Customer::factory()->create(['discount_rate' => 0]));
-    app(CashSessionService::class)->close(User::factory()->create(), '1999', '1000');
+    app(CashSessionService::class)->close(User::factory()->create(), '2110', '1000');
     $movementsBefore = InventoryMovement::count();
 
     expect(fn () => app(CustomerReturnService::class)->register(User::factory()->create(), $sale, [['sale_item_id' => $sale->items()->sole()->id, 'quantity' => '1']], RefundMethod::Cash))

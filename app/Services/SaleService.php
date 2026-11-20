@@ -39,6 +39,7 @@ class SaleService
         private CashSessionService $cashSessions,
         private InventoryService $inventory,
         private FolioSequence $folios,
+        private CustomerBalanceService $balances,
     ) {}
 
     /**
@@ -95,7 +96,7 @@ class SaleService
     /**
      * Charge a pending sale: re-price it with current prices, take the stock out
      * (oldest lots first), record the payments in the open register and give it a folio.
-     * Anything left unpaid is owed on credit by the customer.
+     * Anything left unpaid is owed on credit by the customer, if their credit allows it.
      *
      * @param  list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>  $payments
      */
@@ -245,6 +246,10 @@ class SaleService
     }
 
     /**
+     * Payments may not exceed the total. What they leave unpaid goes on credit, which
+     * needs a customer with credit enabled whose balance stays within their limit.
+     * The customer row is locked so two credit sales cannot both slip under the limit.
+     *
      * @param  list<array{method: PaymentMethod, amount: string, received_amount?: string|null, reference?: string|null}>  $payments
      */
     private function ensurePaymentsFit(Sale $sale, array $payments): void
@@ -257,10 +262,41 @@ class SaleService
             ]);
         }
 
-        if ($sale->customer_id === null && bccomp($paid, $sale->total, self::MONEY) !== 0) {
+        $onCredit = bcsub($sale->total, $paid, self::MONEY);
+
+        if (bccomp($onCredit, '0', self::MONEY) === 0) {
+            return;
+        }
+
+        $customer = $sale->customer_id === null ? null : Customer::query()->lockForUpdate()->find($sale->customer_id);
+
+        if ($customer === null) {
             throw ValidationException::withMessages([
-                'payments' => __('Una venta sin cliente debe pagarse completa: faltan $:missing.', [
-                    'missing' => bcsub($sale->total, $paid, self::MONEY),
+                'payments' => __('Una venta sin cliente debe pagarse completa: faltan $:missing.', ['missing' => $onCredit]),
+            ]);
+        }
+
+        if (! $customer->hasCredit()) {
+            throw ValidationException::withMessages([
+                'payments' => __(':customer no tiene crédito: la venta debe pagarse completa, faltan $:missing.', [
+                    'customer' => $customer->name,
+                    'missing' => $onCredit,
+                ]),
+            ]);
+        }
+
+        if ($customer->credit_limit === null) {
+            return;
+        }
+
+        $balanceAfterSale = bcadd($this->balances->balance($customer), $onCredit, self::MONEY);
+
+        if (bccomp($balanceAfterSale, $customer->credit_limit, self::MONEY) === 1) {
+            throw ValidationException::withMessages([
+                'payments' => __('Con esta venta :customer debería $:balance y su límite es $:limit. Se necesita autorización del dueño.', [
+                    'customer' => $customer->name,
+                    'balance' => $balanceAfterSale,
+                    'limit' => $customer->credit_limit,
                 ]),
             ]);
         }

@@ -323,7 +323,8 @@ Desglose de las 35 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `tax_system` | Régimen fiscal | `varchar(3)` | Sí | — | — | Clave del régimen fiscal del SAT (p. ej. 601, 612). |
 | `cfdi_use` | Uso de CFDI | `varchar(4)` | Sí | — | — | Clave de uso de CFDI por defecto (p. ej. G03). |
 | `zip_code` | Código postal | `varchar(5)` | Sí | — | — | Código postal fiscal. |
-| `credit_limit` | Límite de crédito | `decimal(12,2)` | Sí | — | — | Máximo que puede deber. Vacío = sin límite. Se avisa al rebasarlo (RF-26). |
+| `credit_enabled` | Tiene crédito | `tinyint(1)` | No | `0` | — | Si puede comprar a crédito. Sin crédito, cada venta debe pagarse completa. |
+| `credit_limit` | Límite de crédito | `decimal(12,2)` | Sí | — | — | Máximo que puede deber (solo aplica con crédito activo). Vacío = crédito sin límite. Una venta que lo rebase necesita autorización del dueño (RF-26). |
 | `discount_rate` | Descuento fijo | `decimal(5,4)` | No | `0.0000` | — | Descuento que se le aplica siempre, como fracción: 0.1000 = 10 %. |
 | `is_active` | Activo | `tinyint(1)` | No | `1` | — | Si se le sigue vendiendo. |
 | `facturapi_id` | ID en Facturapi | `varchar(255)` | Sí | — | Único | Identificador del cliente en Facturapi (el servicio de timbrado). |

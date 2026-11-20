@@ -15,4 +15,16 @@ trait RoundsDecimals
             ? bcadd($value, $half, $scale)
             : bcsub($value, $half, $scale);
     }
+
+    /**
+     * Turn a database aggregate (string, int, float or null) into a decimal string.
+     */
+    protected function decimal(mixed $value, int $scale): string
+    {
+        if ($value === null) {
+            return bcadd('0', '0', $scale);
+        }
+
+        return is_float($value) ? sprintf("%.{$scale}f", $value) : bcadd((string) $value, '0', $scale);
+    }
 }

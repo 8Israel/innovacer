@@ -14,6 +14,7 @@ use App\Models\SalePayment;
 use App\Models\SaleStatus;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Services\CustomerBalanceService;
 use App\Services\SaleService;
 
 /**
@@ -182,25 +183,60 @@ test('it chains customer and sale discounts and charges IVA on top of IEPS', fun
     ]);
 });
 
-test('it leaves the unpaid part of a customer sale on credit', function () {
+test('it leaves the unpaid part on the account of a customer with unlimited credit', function () {
     CashSession::factory()->create();
     $warehouse = Warehouse::factory()->sellable()->create();
     $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
     stockLot($product, $warehouse, '10', '2026-01-10');
-    $sale = holdSale($warehouse, $product, '1', Customer::factory()->create(['discount_rate' => 0]));
+    $customer = Customer::factory()->withCredit()->create(['discount_rate' => 0]);
+    $sale = holdSale($warehouse, $product, '1', $customer);
 
     $completed = app(SaleService::class)->complete($sale, User::factory()->create(), [cash('50')]);
 
     expect($completed->status)->toBe(SaleStatus::Completed);
-    expect($completed->payments()->sum('amount'))->toEqual(50);
+    expect(app(CustomerBalanceService::class)->balance($customer))->toBe('66.00');
 });
 
-test('it rejects payments that do not fit the sale', function (array $payments, ?bool $withCustomer) {
+test('it refuses a credit sale that would take Ernesto Castaño over his limit', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 48900, 'tax_rate' => 0, 'ieps_rate' => null]);
+    $stock = stockLot($product, $warehouse, '5', '2026-01-10');
+    $ernesto = Customer::factory()->withCredit('50000')->create(['name' => 'Ernesto Castaño', 'discount_rate' => 0]);
+    Sale::factory()->for($ernesto)->create(['total' => 3200]);
+    $sale = holdSale($warehouse, $product, '1', $ernesto);
+
+    expect(fn () => app(SaleService::class)->complete($sale, User::factory()->create(), []))
+        ->toThrow(failsOn('payments'));
+    expect($sale->fresh()->status)->toBe(SaleStatus::Pending);
+    expect($stock->fresh()->quantity)->toBe('5.000');
+});
+
+test('it accepts a credit sale that reaches the limit exactly', function () {
+    CashSession::factory()->create();
+    $warehouse = Warehouse::factory()->sellable()->create();
+    $product = Product::factory()->create(['unit_price' => 48900, 'tax_rate' => 0, 'ieps_rate' => null]);
+    stockLot($product, $warehouse, '5', '2026-01-10');
+    $ernesto = Customer::factory()->withCredit('50000')->create(['discount_rate' => 0]);
+    Sale::factory()->for($ernesto)->create(['total' => 3200]);
+    $sale = holdSale($warehouse, $product, '1', $ernesto);
+
+    $completed = app(SaleService::class)->complete($sale, User::factory()->create(), [cash('2100')]);
+
+    expect($completed->status)->toBe(SaleStatus::Completed);
+    expect(app(CustomerBalanceService::class)->balance($ernesto))->toBe('50000.00');
+});
+
+test('it rejects payments that do not fit the sale', function (array $payments, string $buyer) {
     CashSession::factory()->create();
     $warehouse = Warehouse::factory()->sellable()->create();
     $product = Product::factory()->create(['unit_price' => 100, 'tax_rate' => 0.16, 'ieps_rate' => null]);
     $stock = stockLot($product, $warehouse, '10', '2026-01-10');
-    $customer = $withCustomer ? Customer::factory()->create(['discount_rate' => 0]) : null;
+    $customer = match ($buyer) {
+        'credit customer' => Customer::factory()->withCredit()->create(['discount_rate' => 0]),
+        'cash customer' => Customer::factory()->create(['discount_rate' => 0]),
+        'walk-in' => null,
+    };
     $sale = holdSale($warehouse, $product, '1', $customer);
 
     expect(fn () => app(SaleService::class)->complete($sale, User::factory()->create(), $payments))
@@ -209,9 +245,10 @@ test('it rejects payments that do not fit the sale', function (array $payments, 
     expect($stock->fresh()->quantity)->toBe('10.000');
     expect(SalePayment::count())->toBe(0);
 })->with([
-    'more than the total' => [[cash('100'), ['method' => PaymentMethod::Card, 'amount' => '20']], true],
-    'walk-in customer paying less than the total' => [[cash('100')], false],
-    'cash received below the cash amount' => [[cash('116', '100')], true],
+    'more than the total' => [[cash('100'), ['method' => PaymentMethod::Card, 'amount' => '20']], 'credit customer'],
+    'walk-in customer paying less than the total' => [[cash('100')], 'walk-in'],
+    'customer without credit paying less than the total' => [[cash('100')], 'cash customer'],
+    'cash received below the cash amount' => [[cash('116', '100')], 'credit customer'],
 ]);
 
 test('it gives consecutive folios to charged sales', function () {
