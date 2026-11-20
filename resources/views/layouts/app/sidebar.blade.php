@@ -44,6 +44,11 @@
                         {{ __('Facturación') }}
                     </flux:sidebar.item>
                 @endcan
+                @can(\App\Models\Permission::ManageSettings->value)
+                    <flux:sidebar.item icon="cog-6-tooth" :href="route('configuration.index')" :current="request()->routeIs('configuration.*')" wire:navigate>
+                        {{ __('Configuración') }}
+                    </flux:sidebar.item>
+                @endcan
             </flux:sidebar.nav>
 
             <flux:spacer />

@@ -36,6 +36,8 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::livewire('clientes/{customer}/estado-de-cuenta', 'pages::customers.statement')->name('customers.statement');
     Route::get('clientes/{customer}/estado-de-cuenta/imprimir', CustomerStatementController::class)->name('customers.statement.print');
 
+    Route::livewire('configuracion', 'pages::configuration.index')->middleware('permission:manage_settings')->name('configuration.index');
+
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
     Route::livewire('invoices/create', 'pages::invoices.create')->name('invoices.create');
     Route::get('invoices/{invoice}/pdf', [InvoiceDownloadController::class, 'pdf'])->name('invoices.pdf');

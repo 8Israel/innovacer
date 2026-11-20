@@ -19,4 +19,21 @@ enum Permission: string
     case PaySuppliers = 'pay_suppliers';
     case ViewReports = 'view_reports';
     case ManageSettings = 'manage_settings';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Sell => __('Vender y cobrar'),
+            self::ManageInventory => __('Registrar entradas, traspasos y ajustes'),
+            self::RegisterPayments => __('Registrar abonos de clientes'),
+            self::RegisterReturns => __('Registrar devoluciones'),
+            self::Invoice => __('Facturar'),
+            self::ChangePrices => __('Cambiar precios y descuentos de clientes'),
+            self::AuthorizeDiscounts => __('Autorizar descuentos en una venta'),
+            self::CancelSales => __('Cancelar ventas'),
+            self::PaySuppliers => __('Pagar a proveedores'),
+            self::ViewReports => __('Ver reportes y utilidad'),
+            self::ManageSettings => __('Entrar a Configuración'),
+        };
+    }
 }
