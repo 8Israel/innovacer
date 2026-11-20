@@ -10,7 +10,7 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->withoutTwoFactor()->create();
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
@@ -22,6 +22,19 @@ test('users can authenticate using the login screen', function () {
         ->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticated();
+});
+
+test('inactive users can not authenticate', function () {
+    $user = User::factory()->inactive()->create();
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors(['email' => 'Tu usuario está desactivado. Habla con el dueño.']);
+
+    $this->assertGuest();
 });
 
 test('users can not authenticate with invalid password', function () {

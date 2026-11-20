@@ -55,9 +55,11 @@ Desglose de las 36 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `name` | Nombre | `varchar(255)` | No | — | — | Nombre de la persona. |
 | `email` | Correo | `varchar(255)` | No | — | Único | Correo con el que inicia sesión. No se puede repetir. |
-| `role` | Rol | `varchar(255)` | No | `clerk` | — | Tipo de usuario. Valores: `owner` (dueño), `clerk` (encargada). Los nuevos quedan como encargada. |
+| `role` | Rol | `varchar(255)` | No | `clerk` | — | Tipo de usuario. Valores: `owner` (dueño), `clerk` (encargada). Los nuevos quedan como encargada. Los permisos son fijos por rol: la encargada no cancela ventas, no paga a proveedores, no ve reportes ni configuración. |
+| `is_active` | Activo | `tinyint(1)` | No | `1` | — | Un usuario inactivo no puede entrar, y si tenía la sesión abierta se le cierra. |
 | `email_verified_at` | Correo verificado el | `timestamp` | Sí | — | — | Fecha en que se confirmó el correo. Vacío si no se ha verificado. |
 | `password` | Contraseña | `varchar(255)` | No | — | — | Contraseña cifrada (nunca se guarda en texto plano). |
+| `must_change_password` | Debe cambiar contraseña | `tinyint(1)` | No | `0` | — | La contraseña es temporal: después de entrar se le obliga a cambiarla antes de usar el sistema. |
 | `two_factor_secret` | Secreto de doble factor | `text` | Sí | — | — | Clave cifrada para la verificación en dos pasos. Vacío si no la usa. |
 | `two_factor_recovery_codes` | Códigos de recuperación | `text` | Sí | — | — | Códigos cifrados para entrar si se pierde el celular de doble factor. |
 | `two_factor_confirmed_at` | Doble factor confirmado el | `timestamp` | Sí | — | — | Fecha en que activó la verificación en dos pasos. |

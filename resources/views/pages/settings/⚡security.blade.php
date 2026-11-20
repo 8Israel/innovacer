@@ -1,6 +1,7 @@
 <?php
 
 use App\Concerns\PasswordValidationRules;
+use App\Services\UserSessionService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -66,7 +67,7 @@ new #[Title('Security settings')] class extends Component {
     /**
      * Update the password for the currently authenticated user.
      */
-    public function updatePassword(): void
+    public function updatePassword(UserSessionService $sessions): void
     {
         try {
             $validated = $this->validate([
@@ -82,6 +83,8 @@ new #[Title('Security settings')] class extends Component {
         Auth::user()->update([
             'password' => $validated['password'],
         ]);
+
+        $sessions->closeOthers(Auth::user(), session()->getId());
 
         $this->reset('current_password', 'password', 'password_confirmation');
 

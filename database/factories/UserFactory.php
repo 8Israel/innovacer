@@ -31,11 +31,46 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::Clerk,
+            'is_active' => true,
+            'must_change_password' => false,
             'remember_token' => Str::random(10),
+            'two_factor_secret' => encrypt('secret'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
+            'two_factor_confirmed_at' => now(),
+        ];
+    }
+
+    /**
+     * Indicate that the user has not set up two-step verification yet,
+     * which the application requires before letting them in.
+     */
+    public function withoutTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes) => [
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
-        ];
+        ]);
+    }
+
+    /**
+     * Indicate that the user cannot log in.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+
+    /**
+     * Indicate that the user has a temporary password to change after logging in.
+     */
+    public function withTemporaryPassword(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'must_change_password' => true,
+        ]);
     }
 
     /**

@@ -4,10 +4,13 @@ namespace App\Providers;
 
 use App\Actions\Facturapi\FacturapiGateway;
 use App\Actions\Facturapi\SdkFacturapiGateway;
+use App\Models\Permission;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Facturapi\Facturapi;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -29,6 +32,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configurePermissions();
+    }
+
+    /**
+     * One Gate per fixed role permission, named after the permission's value.
+     */
+    protected function configurePermissions(): void
+    {
+        foreach (Permission::cases() as $permission) {
+            Gate::define($permission->value, fn (User $user): bool => $user->hasPermission($permission));
+        }
     }
 
     /**

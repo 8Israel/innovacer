@@ -162,7 +162,8 @@ return [
 
     'features' => [
         Features::resetPasswords(),
-        Features::emailVerification(),
+        // Email verification is off: this is an internal system, and two-step
+        // verification (mandatory, see EnsureAccountIsSecure) protects the logins.
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

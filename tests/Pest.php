@@ -4,8 +4,10 @@ use App\Models\Lot;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\Supplier;
+use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -70,6 +72,21 @@ function stockLot(Product $product, Warehouse $warehouse, string $quantity, stri
     ]);
 
     return Stock::factory()->for($lot)->for($warehouse)->create(['product_id' => $product->id, 'quantity' => $quantity]);
+}
+
+/**
+ * Stores an open session of the user, as another device would have it.
+ */
+function openSession(User $user, string $id, string $userAgent = 'Mozilla/5.0 (Windows NT 10.0) Chrome/120.0', int $minutesAgo = 0): void
+{
+    DB::table('sessions')->insert([
+        'id' => $id,
+        'user_id' => $user->id,
+        'ip_address' => '192.168.1.20',
+        'user_agent' => $userAgent,
+        'payload' => '',
+        'last_activity' => now()->subMinutes($minutesAgo)->getTimestamp(),
+    ]);
 }
 
 /**

@@ -41,9 +41,9 @@
                 @endif
             </div>
 
-            <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
-
+            {{-- No "remember me": its single token is shared by every device and would
+                 reopen sessions closed from "Sesiones activas". Sessions last 30 days of
+                 inactivity instead (SESSION_LIFETIME). --}}
             <div class="flex items-center justify-end">
                 <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
                     {{ __('Log in') }}

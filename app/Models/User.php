@@ -20,8 +20,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $name
  * @property string $email
  * @property UserRole $role
+ * @property bool $is_active
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property bool $must_change_password A temporary password that must be changed after logging in.
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -47,12 +49,30 @@ class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
     }
 
     public function isOwner(): bool
     {
         return $this->role === UserRole::Owner;
+    }
+
+    /**
+     * Whether the user is allowed to do something by their role. Inactive users can do nothing.
+     */
+    public function hasPermission(Permission $permission): bool
+    {
+        return $this->is_active && $this->role->allows($permission);
+    }
+
+    /**
+     * Two-step verification is mandatory: an authenticator app or a passkey.
+     */
+    public function hasTwoStepVerification(): bool
+    {
+        return $this->two_factor_confirmed_at !== null || $this->hasPasskeysEnabled();
     }
 
     /**

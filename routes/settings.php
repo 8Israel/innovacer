@@ -2,20 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
+    Route::livewire('settings/sessions', 'pages::settings.sessions')->name('sessions.index');
 
     Route::livewire('settings/security', 'pages::settings.security')
         ->middleware([
             'password.confirm',
         ])
         ->name('security.edit');
+
+    Route::livewire('password/change', 'pages::auth.change-password')->name('password.change');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {

@@ -208,6 +208,8 @@ fondo inicial
 
 ## Tarea 6 · Usuarios y permisos
 
+> **Decidido el 19 nov 2026 (reemplaza lo de abajo donde choque):** se entra con **correo y contraseña** (no se agrega `username`); la **verificación en 2 pasos es obligatoria** para todos (app autenticadora o llave de acceso); **sin verificación de correo**; las sesiones duran **30 días sin uso**, cada dispositivo (PC y PWA del teléfono) tiene la suya y el usuario puede verlas y cerrarlas en "Sesiones activas"; no hay "Recordarme".
+
 **Por qué:** el diseño pide "usuario" (no correo) para entrar, contraseñas temporales y permisos por rol.
 
 **Migración en `users`:**
