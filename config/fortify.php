@@ -160,18 +160,31 @@ return [
     |
     */
 
-    'features' => [
+    'features' => array_values(array_filter([
         Features::resetPasswords(),
-        // Email verification is off: this is an internal system, and two-step
-        // verification (mandatory, see EnsureAccountIsSecure) protects the logins.
-        Features::twoFactorAuthentication([
+        // Email verification is off: this is an internal system.
+        // Two-step verification (authenticator app or passkey) is switched with
+        // TWO_FACTOR_ENABLED; when on, it is mandatory (see EnsureAccountIsSecure).
+        env('TWO_FACTOR_ENABLED', false) ? Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,
             // 'window' => 0
-        ]),
-        Features::passkeys([
+        ]) : null,
+        env('TWO_FACTOR_ENABLED', false) ? Features::passkeys([
             'confirmPassword' => true,
-        ]),
-    ],
+        ]) : null,
+    ])),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mandatory Two-Step Verification
+    |--------------------------------------------------------------------------
+    |
+    | When on, users must set up an authenticator app or a passkey before using
+    | the application. Off for now: login is email and password only.
+    |
+    */
+
+    'two_factor_required' => (bool) env('TWO_FACTOR_ENABLED', false),
 
 ];

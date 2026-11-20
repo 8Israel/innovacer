@@ -35,6 +35,14 @@ test('it sends a user without two-step verification to set it up', function () {
         ->assertRedirect(route('security.edit'));
 });
 
+test('it lets a user without two-step verification in while it is not required', function () {
+    config()->set('fortify.two_factor_required', false);
+
+    $this->actingAs(User::factory()->withoutTwoFactor()->create())
+        ->get(route('dashboard'))
+        ->assertOk();
+});
+
 test('it lets a user without two-step verification open the security page to set it up', function () {
     $user = User::factory()->withoutTwoFactor()->create();
 

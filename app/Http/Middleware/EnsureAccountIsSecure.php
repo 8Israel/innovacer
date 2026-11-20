@@ -10,7 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Keeps a logged-in user out of the application until their account is usable:
  * an inactive user is logged out, a temporary password must be changed first,
- * and two-step verification must be set up before anything else.
+ * and, when fortify.two_factor_required is on, two-step verification must be
+ * set up before anything else.
  */
 class EnsureAccountIsSecure
 {
@@ -36,7 +37,7 @@ class EnsureAccountIsSecure
             return $request->routeIs('password.change') ? $next($request) : redirect()->route('password.change');
         }
 
-        if (! $user->hasTwoStepVerification() && ! $request->routeIs('security.edit', 'password.change')) {
+        if (config('fortify.two_factor_required') && ! $user->hasTwoStepVerification() && ! $request->routeIs('security.edit', 'password.change')) {
             return redirect()->route('security.edit')->with('status', __('Activa la verificación en dos pasos para continuar.'));
         }
 
