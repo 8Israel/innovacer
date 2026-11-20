@@ -1,10 +1,16 @@
 <?php
 
 use App\Actions\Facturapi\FacturapiGateway;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\SaleItem;
+use App\Models\Supplier;
+use App\Models\Warehouse;
 use Facturapi\Exceptions\Facturapi_Exception;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -26,7 +32,33 @@ new #[Title('Productos')] class extends Component
 
     public ?string $unit_price = '';
 
-    public string $tax_rate = '0.16';
+    /** No default: the IVA rate is chosen for every product (task 7). */
+    public string $tax_rate = '';
+
+    public string $brand = '';
+
+    public string $presentation = '';
+
+    public ?int $category_id = null;
+
+    public ?int $supplier_id = null;
+
+    public string $unit = 'pieza';
+
+    public string $reference_cost = '';
+
+    public string $wholesale_price = '';
+
+    public string $wholesale_min_quantity = '';
+
+    public string $ieps_rate = '';
+
+    /**
+     * Minimum stock by warehouse id; blank means no minimum.
+     *
+     * @var array<int, string>
+     */
+    public array $minimums = [];
 
     public string $product_key = '';
 
@@ -66,13 +98,74 @@ new #[Title('Productos')] class extends Component
             'description' => ['nullable', 'string'],
             'sku' => ['required', 'string', 'max:255', 'unique:products,sku,'.$this->editingId],
             'barcode' => ['nullable', 'string', 'max:255', 'unique:products,barcode,'.$this->editingId],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'presentation' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
+            'unit' => ['required', 'string', 'max:50'],
+            'reference_cost' => ['nullable', 'numeric', 'min:0'],
             'unit_price' => ['nullable', 'numeric', 'min:0'],
+            'wholesale_price' => ['nullable', 'numeric', 'min:0'],
+            'wholesale_min_quantity' => ['nullable', 'numeric', 'gt:0'],
             'tax_rate' => ['required', 'numeric', 'min:0', 'max:1'],
-            'product_key' => ['required', 'string', 'max:8'],
+            'ieps_rate' => ['nullable', 'numeric', 'min:0', 'max:1'],
+            'product_key' => ['nullable', 'string', 'max:8'],
             'product_key_name' => ['nullable', 'string', 'max:255'],
-            'unit_key' => ['required', 'string', 'max:3'],
-            'unit_name' => ['required', 'string', 'max:255'],
+            'unit_key' => ['nullable', 'string', 'max:3'],
+            'unit_name' => ['nullable', 'string', 'max:255'],
+            'minimums.*' => ['nullable', 'numeric', 'min:0'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function validationAttributes(): array
+    {
+        return [
+            'tax_rate' => __('tasa de IVA'),
+            'wholesale_min_quantity' => __('mayoreo desde'),
+            'minimums.*' => __('existencia mínima'),
+        ];
+    }
+
+    #[Computed]
+    public function categories(): Collection
+    {
+        return Category::query()->orderBy('name')->get(['id', 'name']);
+    }
+
+    #[Computed]
+    public function suppliers(): Collection
+    {
+        return Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+    }
+
+    #[Computed]
+    public function warehouses(): Collection
+    {
+        return Warehouse::query()->where('is_active', true)->orderByDesc('is_sellable')->orderBy('id')->get(['id', 'name']);
+    }
+
+    /**
+     * An internal EAN-13 barcode (prefix 200, reserved for in-store use) that no
+     * other product has.
+     */
+    public function generateBarcode(): void
+    {
+        do {
+            $digits = '200'.str_pad((string) random_int(0, 999_999_999), 9, '0', STR_PAD_LEFT);
+            $sum = 0;
+
+            foreach (str_split($digits) as $position => $digit) {
+                $sum += (int) $digit * ($position % 2 === 0 ? 1 : 3);
+            }
+
+            $code = $digits.((10 - $sum % 10) % 10);
+        } while (Product::query()->where('barcode', $code)->exists());
+
+        $this->barcode = $code;
+        $this->barcodeAvailable = true;
     }
 
     public function create(): void
@@ -91,14 +184,26 @@ new #[Title('Productos')] class extends Component
         $this->description = (string) $product->description;
         $this->sku = $product->sku;
         $this->barcode = (string) $product->barcode;
+        $this->brand = (string) $product->brand;
+        $this->presentation = (string) $product->presentation;
+        $this->category_id = $product->category_id;
+        $this->supplier_id = $product->supplier_id;
+        $this->unit = $product->unit;
+        $this->reference_cost = (string) $product->reference_cost;
         $this->unit_price = (string) $product->unit_price;
+        $this->wholesale_price = (string) $product->wholesale_price;
+        $this->wholesale_min_quantity = $product->wholesale_min_quantity === null ? '' : rtrim(rtrim($product->wholesale_min_quantity, '0'), '.');
         $this->tax_rate = (string) $product->tax_rate;
-        $this->product_key = $product->product_key;
+        $this->ieps_rate = (string) $product->ieps_rate;
+        $this->minimums = $product->stockMinimums()->pluck('min_quantity', 'warehouse_id')
+            ->map(fn ($quantity) => rtrim(rtrim((string) $quantity, '0'), '.'))
+            ->all();
+        $this->product_key = (string) $product->product_key;
         $this->product_key_name = (string) $product->product_key_name;
-        $this->product_key_search = $this->formatCatalogLabel($product->product_key, (string) $product->product_key_name);
-        $this->unit_key = $product->unit_key;
-        $this->unit_name = $product->unit_name;
-        $this->unit_key_search = $this->formatCatalogLabel($product->unit_key, $product->unit_name);
+        $this->product_key_search = $product->product_key ? $this->formatCatalogLabel($product->product_key, (string) $product->product_key_name) : '';
+        $this->unit_key = (string) $product->unit_key;
+        $this->unit_name = (string) $product->unit_name;
+        $this->unit_key_search = $product->unit_key ? $this->formatCatalogLabel($product->unit_key, (string) $product->unit_name) : '';
 
         Flux::modal('product-form')->show();
     }
@@ -222,21 +327,40 @@ new #[Title('Productos')] class extends Component
     }
 
     /**
-     * An empty price input arrives as '' (not null), but the field is
-     * optional — treat a blank value as "no price yet" before validating.
+     * Validate and save the product with its minimum stock by warehouse. Blank
+     * optional fields (no price yet, no SAT key…) are stored as null.
      */
-    private function normalizeUnitPrice(): void
+    private function persist(): Product
     {
-        $this->unit_price = $this->unit_price !== '' ? $this->unit_price : null;
+        $validated = $this->validate();
+        $minimums = $validated['minimums'] ?? [];
+        unset($validated['minimums']);
+
+        $product = DB::transaction(function () use ($validated, $minimums): Product {
+            $product = Product::updateOrCreate(
+                ['id' => $this->editingId],
+                array_map(fn ($value) => $value === '' ? null : $value, $validated),
+            );
+
+            foreach ($this->warehouses as $warehouse) {
+                $minimum = $minimums[$warehouse->id] ?? null;
+
+                blank($minimum)
+                    ? $product->stockMinimums()->where('warehouse_id', $warehouse->id)->delete()
+                    : $product->stockMinimums()->updateOrCreate(['warehouse_id' => $warehouse->id], ['min_quantity' => $minimum]);
+            }
+
+            return $product;
+        });
+
+        unset($this->products);
+
+        return $product;
     }
 
     public function save(): void
     {
-        $this->normalizeUnitPrice();
-
-        $validated = $this->validate();
-
-        Product::updateOrCreate(['id' => $this->editingId], $validated);
+        $this->persist();
 
         Flux::modal('product-form')->close();
 
@@ -251,11 +375,8 @@ new #[Title('Productos')] class extends Component
      */
     public function saveAndAddAnother(): void
     {
-        $this->normalizeUnitPrice();
-
-        $validated = $this->validate();
-
-        Product::create($validated);
+        $this->editingId = null;
+        $this->persist();
 
         $this->resetForm();
 
@@ -269,26 +390,46 @@ new #[Title('Productos')] class extends Component
         Flux::modal('product-delete')->show();
     }
 
+    /**
+     * Delete a product that was never used. One with lots, sales or invoices is
+     * deactivated instead, because inventory history is never deleted.
+     */
     public function delete(): void
     {
-        Product::whereKey($this->deletingId)->delete();
+        $product = Product::query()->findOrFail($this->deletingId);
+
+        $hasHistory = $product->lots()->exists()
+            || $product->invoiceItems()->exists()
+            || SaleItem::query()->where('product_id', $product->id)->exists();
+
+        if ($hasHistory) {
+            $product->update(['is_active' => false]);
+        } else {
+            DB::transaction(function () use ($product): void {
+                $product->stockMinimums()->delete();
+                $product->delete();
+            });
+        }
 
         $this->deletingId = null;
 
         Flux::modal('product-delete')->close();
 
-        Flux::toast(variant: 'success', text: __('Producto eliminado.'));
+        Flux::toast(variant: 'success', text: $hasHistory
+            ? __('El producto tiene movimientos: se desactivó en lugar de eliminarse.')
+            : __('Producto eliminado.'));
     }
 
     public function resetForm(): void
     {
         $this->reset([
-            'editingId', 'name', 'description', 'sku', 'barcode', 'unit_price',
+            'editingId', 'name', 'description', 'sku', 'barcode', 'unit_price', 'tax_rate',
+            'brand', 'presentation', 'category_id', 'supplier_id', 'unit', 'reference_cost',
+            'wholesale_price', 'wholesale_min_quantity', 'ieps_rate', 'minimums',
             'product_key', 'product_key_name', 'product_key_search', 'product_key_results',
             'unit_key', 'unit_name', 'unit_key_search', 'unit_key_results',
             'skuAvailable', 'barcodeAvailable',
         ]);
-        $this->tax_rate = '0.16';
         $this->resetValidation();
     }
 
@@ -395,6 +536,24 @@ new #[Title('Productos')] class extends Component
 
             <flux:input wire:model="name" :label="__('Nombre')" required autofocus />
 
+            <div class="grid grid-cols-2 items-start gap-4 md:grid-cols-3">
+                <flux:input wire:model="brand" :label="__('Marca')" />
+                <flux:input wire:model="presentation" :label="__('Presentación')" :placeholder="__('Ej. 20 L')" />
+                <flux:input wire:model="unit" :label="__('Unidad de venta')" :placeholder="__('Ej. garrafa, pieza, metro')" required />
+                <flux:select wire:model="supplier_id" :label="__('Proveedor principal')" :placeholder="__('Elige…')">
+                    <flux:select.option value="">{{ __('Sin proveedor') }}</flux:select.option>
+                    @foreach ($this->suppliers as $supplier)
+                        <flux:select.option :value="$supplier->id">{{ $supplier->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:select wire:model="category_id" :label="__('Categoría')" :placeholder="__('Elige…')">
+                    <flux:select.option value="">{{ __('Sin categoría') }}</flux:select.option>
+                    @foreach ($this->categories as $category)
+                        <flux:select.option :value="$category->id">{{ $category->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+
             <div class="grid grid-cols-2 items-start gap-4">
                 <div class="relative">
                     <div class="flex items-end gap-1">
@@ -493,7 +652,11 @@ new #[Title('Productos')] class extends Component
                 </div>
 
                 <div>
-                    <flux:input wire:model.live.debounce.500ms="barcode" icon="qr-code" :label="__('Código de barras')" description:trailing="{{ __('Escanéalo aquí o captúralo manualmente') }}" autocomplete="off" />
+                    <flux:input wire:model.live.debounce.500ms="barcode" icon="qr-code" :label="__('Código de barras')" description:trailing="{{ __('Escanéalo, escríbelo o genera uno interno') }}" autocomplete="off">
+                        <x-slot name="iconTrailing">
+                            <flux:button size="sm" variant="subtle" type="button" wire:click="generateBarcode" class="-me-1">{{ __('Generar') }}</flux:button>
+                        </x-slot>
+                    </flux:input>
                     <div wire:loading wire:target="barcode" class="mt-1 text-xs text-zinc-500">{{ __('Comprobando...') }}</div>
                     @if (! $errors->has('barcode'))
                         <div wire:loading.remove wire:target="barcode">
@@ -509,22 +672,36 @@ new #[Title('Productos')] class extends Component
 
             <div class="grid grid-cols-2 items-start gap-4">
                 <flux:input
-                    wire:model.live.debounce.300ms="unit_price"
-                    :label="__('Precio unitario (sin IVA)')"
+                    wire:model="reference_cost"
+                    :label="__('Costo de referencia')"
                     type="number"
                     step="0.01"
                     min="0"
-                    description:trailing="{{ __('Déjalo vacío si aún no tienes el precio.') }}"
+                    description:trailing="{{ __('El costo real se guarda en cada entrada.') }}"
                 />
+                <flux:input
+                    wire:model.live.debounce.300ms="unit_price"
+                    :label="__('Precio público (sin IVA)')"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    description:trailing="{{ __('Opcional: sin precio el producto existe en inventario, pero no se vende.') }}"
+                />
+                <flux:input wire:model="wholesale_price" :label="__('Precio mayoreo')" type="number" step="0.01" min="0" />
+                <flux:input wire:model="wholesale_min_quantity" :label="__('Mayoreo desde')" type="number" step="any" min="0" :placeholder="__('Piezas')" />
+            </div>
 
+            <div class="grid grid-cols-2 items-start gap-4">
                 <div>
-                    <flux:input wire:model.live.debounce.300ms="tax_rate" :label="__('Tasa de IVA')" type="number" step="0.0001" min="0" max="1" required />
+                    <flux:input wire:model.live.debounce.300ms="tax_rate" :label="__('Tasa de IVA')" type="number" step="0.0001" min="0" max="1" :placeholder="__('Elige la tasa')" required />
                     <div class="mt-2 flex gap-2">
                         <flux:button size="sm" type="button" wire:click="$set('tax_rate', '0.16')" :variant="$tax_rate === '0.16' ? 'primary' : 'ghost'">16%</flux:button>
                         <flux:button size="sm" type="button" wire:click="$set('tax_rate', '0.08')" :variant="$tax_rate === '0.08' ? 'primary' : 'ghost'">8% {{ __('Frontera') }}</flux:button>
                         <flux:button size="sm" type="button" wire:click="$set('tax_rate', '0')" :variant="$tax_rate === '0' ? 'primary' : 'ghost'">0%</flux:button>
                     </div>
                 </div>
+
+                <flux:input wire:model="ieps_rate" :label="__('Tasa de IEPS')" type="number" step="0.0001" min="0" max="1" :placeholder="__('No aplica')" />
             </div>
 
             @if ($unit_price !== '' && $unit_price !== null)
@@ -534,6 +711,19 @@ new #[Title('Productos')] class extends Component
             @endif
 
             <flux:textarea wire:model="description" :label="__('Descripción')" />
+
+            <div>
+                <flux:heading size="sm">{{ __('Existencia mínima por almacén') }}</flux:heading>
+                <div class="mt-2 grid grid-cols-2 gap-4 md:grid-cols-3">
+                    @foreach ($this->warehouses as $warehouse)
+                        <flux:input wire:key="minimum-{{ $warehouse->id }}" wire:model="minimums.{{ $warehouse->id }}" :label="$warehouse->name" type="number" step="any" min="0" :placeholder="__('Sin mínimo')" />
+                    @endforeach
+                </div>
+            </div>
+
+            <flux:callout icon="information-circle" :heading="__('¿Y la existencia?')">
+                <flux:callout.text>{{ __('La existencia no se escribe aquí. Se registra con una entrada de mercancía, así queda el proveedor, el costo y el lote.') }}</flux:callout.text>
+            </flux:callout>
 
             <div class="flex items-center justify-end gap-2">
                 <flux:modal.close>

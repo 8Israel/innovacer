@@ -182,6 +182,9 @@ new #[Title('Inventario')] class extends Component {
             <flux:heading size="xl">{{ __('Inventario') }}</flux:heading>
             <flux:text class="mt-1">{{ __('Existencias por almacén y dueño del producto') }}</flux:text>
         </div>
+        <div class="flex flex-wrap gap-2">
+            <flux:button icon="plus" :href="route('products.index')" wire:navigate>{{ __('Nuevo producto') }}</flux:button>
+        </div>
     </div>
 
     @php
