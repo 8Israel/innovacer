@@ -533,7 +533,7 @@ new #[Title('Producto')] class extends Component {
                     </div>
                     <div class="mt-2 rounded bg-white p-1">
                         @if ($printableCode)
-                            <div class="h-10">{!! $ean13->svg($printableCode) !!}</div>
+                            <div class="h-10 overflow-hidden">{!! $ean13->svg($printableCode) !!}</div>
                             <div class="text-center font-mono text-xs tracking-wider text-zinc-800">{{ $ean13->digits($printableCode) }}</div>
                         @else
                             <flux:text size="sm" class="text-center">{{ __('Genera o escribe un código EAN-13') }}</flux:text>

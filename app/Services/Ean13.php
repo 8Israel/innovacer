@@ -86,7 +86,7 @@ class Ean13
             }
         }
 
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$width.' 50" preserveAspectRatio="none" role="img" aria-label="'.$code.'">'
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$width.' 50" width="100%" height="100%" preserveAspectRatio="none" style="display:block" role="img" aria-label="'.$code.'">'
             .'<g fill="#000" shape-rendering="crispEdges">'.$bars.'</g></svg>';
     }
 
