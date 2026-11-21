@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\InvoiceDownloadController;
+use App\Http\Controllers\ProductLabelController;
 use App\Http\Controllers\SaleDocumentController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,8 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
         Route::livewire('inventario/prestamos', 'pages::inventory.loans')->name('inventory.loans');
         Route::livewire('inventario/conteo', 'pages::inventory.count')->name('inventory.count');
         Route::livewire('inventario/importar', 'pages::inventory.import')->name('inventory.import');
+        Route::livewire('inventario/etiquetas', 'pages::inventory.labels')->name('inventory.labels');
+        Route::get('inventario/etiquetas/imprimir', ProductLabelController::class)->name('products.labels');
         Route::livewire('inventario/productos/{product}/kardex', 'pages::inventory.kardex')->name('inventory.kardex');
     });
 

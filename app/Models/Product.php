@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Ean13;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -97,15 +98,11 @@ class Product extends Model
      */
     public static function newInternalBarcode(): string
     {
+        $ean13 = app(Ean13::class);
+
         do {
             $digits = '200'.str_pad((string) random_int(0, 999_999_999), 9, '0', STR_PAD_LEFT);
-            $sum = 0;
-
-            foreach (str_split($digits) as $position => $digit) {
-                $sum += (int) $digit * ($position % 2 === 0 ? 1 : 3);
-            }
-
-            $code = $digits.((10 - $sum % 10) % 10);
+            $code = $digits.$ean13->checkDigit($digits);
         } while (self::query()->where('barcode', $code)->exists());
 
         return $code;
