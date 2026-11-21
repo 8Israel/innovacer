@@ -211,6 +211,7 @@ new #[Title('Kardex de producto')] class extends Component {
             </flux:text>
         </div>
         <div class="flex flex-wrap gap-2">
+            <flux:button icon="pencil-square" :href="route('products.edit', $product)" wire:navigate>{{ __('Editar producto') }}</flux:button>
             <flux:button icon="scale" wire:click="startAdjustment" data-test="adjust-button">{{ __('Ajuste por conteo') }}</flux:button>
             <flux:button icon="arrow-up-tray" wire:click="startExit" data-test="exit-button">{{ __('Salida') }}</flux:button>
             <flux:button icon="arrows-right-left" :href="route('inventory.transfer')" wire:navigate>{{ __('Traspasar') }}</flux:button>

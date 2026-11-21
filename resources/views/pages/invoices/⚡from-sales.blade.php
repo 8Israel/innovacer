@@ -155,7 +155,6 @@ new #[Title('Nueva factura')] class extends Component {
             <flux:heading size="xl">{{ __('Nueva factura') }}</flux:heading>
             <flux:text class="mt-1">{{ __('Se arma desde las ventas: productos, precios e impuestos ya vienen llenos') }}</flux:text>
         </div>
-        <flux:button size="sm" variant="ghost" :href="route('invoices.create')" wire:navigate>{{ __('Factura manual') }}</flux:button>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
@@ -231,7 +230,7 @@ new #[Title('Nueva factura')] class extends Component {
                                             @if (filled($line['product']->product_key) && filled($line['product']->unit_key))
                                                 <span class="text-sm text-zinc-500">{{ __('En la ficha') }}</span>
                                             @else
-                                                <flux:link :href="route('products.index')" wire:navigate class="text-sm text-red-700 dark:text-red-400">{{ __('Falta · completar') }}</flux:link>
+                                                <flux:link :href="route('products.edit', $line['product'])" wire:navigate class="text-sm text-red-700 dark:text-red-400">{{ __('Falta · completar') }}</flux:link>
                                             @endif
                                         </flux:table.cell>
                                         <flux:table.cell align="end" class="tabular-nums">{{ $this->format($line['quantity']) }}</flux:table.cell>

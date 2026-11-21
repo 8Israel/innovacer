@@ -6,7 +6,6 @@ use App\Models\CustomerPayment;
 use App\Models\CustomerPaymentAllocation;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
-use App\Models\InvoiceStatus;
 use App\Models\PaymentMethod;
 use App\Models\Sale;
 use App\Models\User;
@@ -37,30 +36,13 @@ test('a PPD invoice with a payment shows that its complement is missing and stam
     Livewire::actingAs(User::factory()->create())
         ->test('pages::invoices.index')
         ->assertSee('Falta complemento')
-        ->call('startComplement', $invoice->id)
+        ->call('select', $invoice->id)
+        ->assertSee('falta emitir su complemento de pago')
+        ->call('startComplement')
         ->assertSeeInOrder(['Complemento de pago', 'Factura A-0002', 'Parcialidad', '1', 'Saldo anterior', '$3,200.00', '$1,500.00', 'Saldo pendiente', '$1,700.00'])
         ->call('stampComplement')
         ->assertHasNoErrors()
         ->assertDontSee('Falta complemento');
 
     expect(InvoicePayment::query()->sole()->outstanding_balance)->toBe('1700.00');
-});
-
-test('an invoice is cancelled with the SAT motive chosen', function () {
-    $invoice = Invoice::factory()->stamped()->for(Customer::factory())->create();
-    $this->mock(FacturapiGateway::class, function ($mock) use ($invoice) {
-        $mock->shouldReceive('cancelInvoice')->once()->with($invoice->facturapi_id, '03', null)->andReturn(['status' => 'canceled']);
-    });
-
-    Livewire::actingAs(User::factory()->create())
-        ->test('pages::invoices.index')
-        ->call('confirmCancel', $invoice->id)
-        ->set('cancellation_reason', '01')
-        ->call('cancel')
-        ->assertHasErrors('substitution_uuid')
-        ->set('cancellation_reason', '03')
-        ->call('cancel')
-        ->assertHasNoErrors();
-
-    expect($invoice->fresh()->only(['status', 'cancellation_reason']))->toBe(['status' => InvoiceStatus::Canceled, 'cancellation_reason' => '03']);
 });

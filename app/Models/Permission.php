@@ -16,6 +16,7 @@ enum Permission: string
     case ChangePrices = 'change_prices';
     case AuthorizeDiscounts = 'authorize_discounts';
     case CancelSales = 'cancel_sales';
+    case CancelInvoices = 'cancel_invoices';
     case PaySuppliers = 'pay_suppliers';
     case ViewReports = 'view_reports';
     case ManageSettings = 'manage_settings';
@@ -31,6 +32,7 @@ enum Permission: string
             self::ChangePrices => __('Cambiar precios y descuentos de clientes'),
             self::AuthorizeDiscounts => __('Autorizar descuentos en una venta'),
             self::CancelSales => __('Cancelar ventas'),
+            self::CancelInvoices => __('Cancelar facturas'),
             self::PaySuppliers => __('Pagar a proveedores'),
             self::ViewReports => __('Ver reportes y utilidad'),
             self::ManageSettings => __('Entrar a Configuración'),

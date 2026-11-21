@@ -17,7 +17,7 @@ enum UserRole: string
 
     /**
      * Permissions are fixed per role: the owner can do everything; the clerk
-     * cannot cancel sales, pay suppliers, see reports or change settings.
+     * cannot cancel sales or invoices, pay suppliers, see reports or change settings.
      * Both may change prices and authorize discounts (decided 2026-11-19).
      */
     public function allows(Permission $permission): bool
@@ -26,6 +26,7 @@ enum UserRole: string
             self::Owner => true,
             self::Clerk => ! in_array($permission, [
                 Permission::CancelSales,
+                Permission::CancelInvoices,
                 Permission::PaySuppliers,
                 Permission::ViewReports,
                 Permission::ManageSettings,

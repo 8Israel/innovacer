@@ -30,11 +30,12 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
         Route::livewire('inventario/conteo', 'pages::inventory.count')->name('inventory.count');
         Route::livewire('inventario/importar', 'pages::inventory.import')->name('inventory.import');
         Route::livewire('inventario/etiquetas', 'pages::inventory.labels')->name('inventory.labels');
+        Route::livewire('productos/nuevo', 'pages::products.form')->name('products.create');
+        Route::livewire('productos/{product}/editar', 'pages::products.form')->name('products.edit');
         Route::get('inventario/etiquetas/imprimir', ProductLabelController::class)->name('products.labels');
         Route::livewire('inventario/productos/{product}/kardex', 'pages::inventory.kardex')->name('inventory.kardex');
     });
 
-    Route::livewire('products', 'pages::products')->name('products.index');
     Route::livewire('clientes', 'pages::customers.index')->name('customers.index');
     Route::livewire('clientes/nuevo', 'pages::customers.show')->name('customers.create');
     Route::livewire('clientes/{customer}', 'pages::customers.show')->name('customers.show');
@@ -48,11 +49,12 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
 
     Route::livewire('configuracion', 'pages::configuration.index')->middleware('permission:manage_settings')->name('configuration.index');
 
-    Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
-    Route::livewire('facturas/nueva', 'pages::invoices.from-sales')->middleware('permission:invoice')->name('invoices.from-sales');
-    Route::livewire('invoices/create', 'pages::invoices.create')->name('invoices.create');
-    Route::get('invoices/{invoice}/pdf', [InvoiceDownloadController::class, 'pdf'])->name('invoices.pdf');
-    Route::get('invoices/{invoice}/xml', [InvoiceDownloadController::class, 'xml'])->name('invoices.xml');
+    Route::middleware('permission:invoice')->group(function () {
+        Route::livewire('facturas', 'pages::invoices.index')->name('invoices.index');
+        Route::livewire('facturas/nueva', 'pages::invoices.from-sales')->name('invoices.from-sales');
+        Route::get('facturas/{invoice}/pdf', [InvoiceDownloadController::class, 'pdf'])->name('invoices.pdf');
+        Route::get('facturas/{invoice}/xml', [InvoiceDownloadController::class, 'xml'])->name('invoices.xml');
+    });
 });
 
 require __DIR__.'/settings.php';

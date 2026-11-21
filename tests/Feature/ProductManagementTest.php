@@ -10,20 +10,21 @@ use App\Models\Warehouse;
 use Livewire\Livewire;
 
 test('guests are redirected to login', function () {
-    $this->get(route('products.index'))->assertRedirect(route('login'));
+    $this->get(route('products.create'))->assertRedirect(route('login'));
 });
 
-test('products page is displayed', function () {
+test('the product form is displayed for a new product and for an existing one', function () {
     $this->actingAs(User::factory()->create());
+    $product = Product::factory()->create(['name' => 'Ultra Calcio 20 L']);
 
-    $this->get(route('products.index'))->assertOk();
+    $this->get(route('products.create'))->assertOk()->assertSeeInOrder(['Nuevo producto', 'Identificación', 'Precios', 'Datos para facturar', 'Existencia mínima por almacén', 'Etiqueta', '¿Y la existencia?']);
+    $this->get(route('products.edit', $product))->assertOk()->assertSee('Ultra Calcio 20 L')->assertSee('Imprimir etiquetas');
 });
 
 test('a product can be created', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('name', 'Insecticida Cipermetrina 25 CE')
         ->set('sku', 'AGR-0001')
         ->set('unit_price', '450.00')
@@ -43,8 +44,7 @@ test('a product can be created', function () {
 test('a product can be created without a price yet', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('name', 'Producto Pendiente de Precio')
         ->set('sku', 'AGR-0099')
         ->set('tax_rate', '0.16')
@@ -65,7 +65,7 @@ test('the product list shows a badge for products without a price', function () 
 
     Product::factory()->withoutPrice()->create(['name' => 'Sin Precio Aún']);
 
-    Livewire::test('pages::products')
+    Livewire::test('pages::inventory.index')
         ->assertSee('Sin Precio Aún')
         ->assertSee('Sin precio');
 });
@@ -73,8 +73,7 @@ test('the product list shows a badge for products without a price', function () 
 test('creating a product requires a name, a code and the IVA rate, but not the SAT keys', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('name', '')
         ->set('sku', '')
         ->set('product_key', '')
@@ -92,8 +91,7 @@ test('a product is saved with its supplier, wholesale price and minimum stock by
     $mostrador = Warehouse::factory()->sellable()->create();
     $bodega = Warehouse::factory()->create();
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('name', 'Ultra Calcio 20 L')
         ->set('sku', 'UCA-20')
         ->set('brand', 'Biotexa')
@@ -132,8 +130,7 @@ test('editing a product loads its minimum stock and removes a cleared one', func
     $product = Product::factory()->create();
     StockMinimum::factory()->for($product)->for($mostrador)->create(['min_quantity' => 5]);
 
-    Livewire::test('pages::products')
-        ->call('edit', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->assertSet("minimums.{$mostrador->id}", '5')
         ->set("minimums.{$mostrador->id}", '')
         ->call('save')
@@ -145,8 +142,7 @@ test('editing a product loads its minimum stock and removes a cleared one', func
 test('it generates a valid internal barcode that no other product has', function () {
     $this->actingAs(User::factory()->create());
 
-    $component = Livewire::test('pages::products')
-        ->call('create')
+    $component = Livewire::test('pages::products.form')
         ->call('generateBarcode');
 
     $barcode = $component->get('barcode');
@@ -163,8 +159,7 @@ test('a product with movements is deactivated instead of deleted', function () {
     $product = Product::factory()->create();
     stockLot($product, Warehouse::factory()->create(), '5', '2026-10-01');
 
-    Livewire::test('pages::products')
-        ->call('confirmDelete', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->call('delete');
 
     expect($product->fresh()->is_active)->toBeFalse();
@@ -175,8 +170,7 @@ test('a product can be updated', function () {
 
     $product = Product::factory()->create(['name' => 'Original']);
 
-    Livewire::test('pages::products')
-        ->call('edit', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->set('name', 'Updated name')
         ->call('save')
         ->assertHasNoErrors();
@@ -189,8 +183,7 @@ test('a product can be deleted', function () {
 
     $product = Product::factory()->create();
 
-    Livewire::test('pages::products')
-        ->call('confirmDelete', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->call('delete');
 
     expect(Product::find($product->id))->toBeNull();
@@ -205,8 +198,7 @@ test('searching the SAT product catalog fills the key and its description', func
         ]);
     });
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('product_key_search', 'insecticida')
         ->assertSet('product_key_results', [['key' => '10191509', 'description' => 'Insecticidas']])
         ->call('selectProductKey', '10191509')
@@ -224,8 +216,7 @@ test('searching the SAT unit catalog fills the key and its name', function () {
         ]);
     });
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('unit_key_search', 'litro')
         ->call('selectUnitKey', 'LTR')
         ->assertSet('unit_key', 'LTR')
@@ -239,8 +230,7 @@ test('a short catalog search does not call facturapi', function () {
         $mock->shouldNotReceive('searchProductKeys');
     });
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('product_key_search', 'in')
         ->assertSet('product_key_results', []);
 });
@@ -251,31 +241,47 @@ test('the product list can be searched by name, sku or barcode', function () {
     Product::factory()->create(['name' => 'Insecticida X', 'sku' => 'AAA-1', 'barcode' => '1111111111111']);
     Product::factory()->create(['name' => 'Fertilizante Y', 'sku' => 'BBB-2', 'barcode' => '2222222222222']);
 
-    Livewire::test('pages::products')
+    Livewire::test('pages::inventory.index')
         ->set('search', '2222222222222')
         ->assertSee('Fertilizante Y')
         ->assertDontSee('Insecticida X');
 });
 
-test('scanning a known barcode opens the product for editing', function () {
+test('scanning a known barcode in the inventory finds the product with its edit link', function () {
     $this->actingAs(User::factory()->create());
 
     $product = Product::factory()->create(['barcode' => '7501234567890']);
 
-    Livewire::test('pages::products')
-        ->set('barcodeScan', '7501234567890')
-        ->call('scanBarcode')
-        ->assertSet('editingId', $product->id)
-        ->assertSet('name', $product->name);
+    Livewire::test('pages::inventory.index')
+        ->set('search', '7501234567890')
+        ->assertSee($product->name)
+        ->assertSee(route('products.edit', $product), escape: false);
 });
 
-test('scanning an unknown barcode shows an error and opens nothing', function () {
+test('scanning an unknown barcode in the inventory finds nothing', function () {
     $this->actingAs(User::factory()->create());
+    Product::factory()->create(['barcode' => '7501234567890']);
 
-    Livewire::test('pages::products')
-        ->set('barcodeScan', 'does-not-exist')
-        ->call('scanBarcode')
-        ->assertSet('editingId', null);
+    Livewire::test('pages::inventory.index')
+        ->set('search', 'does-not-exist')
+        ->assertSee('No hay productos con esos filtros.');
+});
+
+test('a deactivated product can be found among the inactive ones and reactivated', function () {
+    $this->actingAs(User::factory()->create());
+    $product = Product::factory()->create(['name' => 'Producto Viejo', 'is_active' => false]);
+
+    Livewire::test('pages::inventory.index')
+        ->assertDontSee('Producto Viejo')
+        ->set('show_inactive', true)
+        ->assertSee('Producto Viejo');
+
+    Livewire::test('pages::products.form', ['product' => $product])
+        ->set('is_active', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($product->fresh()->is_active)->toBeTrue();
 });
 
 test('typing a taken sku marks it as unavailable, and a free one as available', function () {
@@ -283,8 +289,7 @@ test('typing a taken sku marks it as unavailable, and a free one as available', 
 
     Product::factory()->create(['sku' => 'TAKEN-1']);
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('sku', 'TAKEN-1')
         ->assertSet('skuAvailable', false)
         ->set('sku', 'FREE-1')
@@ -296,8 +301,7 @@ test('editing a product does not flag its own sku as taken', function () {
 
     $product = Product::factory()->create(['sku' => 'SELF-1']);
 
-    Livewire::test('pages::products')
-        ->call('edit', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->set('sku', 'SELF-1')
         ->assertSet('skuAvailable', true);
 });
@@ -305,8 +309,7 @@ test('editing a product does not flag its own sku as taken', function () {
 test('the price with tax preview updates as price and tax rate change', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('unit_price', '100')
         ->set('tax_rate', '0.16')
         ->assertSee('116.00');
@@ -317,8 +320,7 @@ test('the sat key fields can be cleared', function () {
 
     $product = Product::factory()->create();
 
-    Livewire::test('pages::products')
-        ->call('edit', $product->id)
+    Livewire::test('pages::products.form', ['product' => $product])
         ->assertSet('product_key', $product->product_key)
         ->call('clearProductKey')
         ->assertSet('product_key', '')
@@ -331,8 +333,7 @@ test('the sat key fields can be cleared', function () {
 test('save and add another persists the product and leaves the form ready for a new one', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test('pages::products')
-        ->call('create')
+    Livewire::test('pages::products.form')
         ->set('name', 'Producto Uno')
         ->set('sku', 'BATCH-1')
         ->set('unit_price', '100')

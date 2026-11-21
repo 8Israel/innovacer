@@ -30,6 +30,10 @@ new #[Title('Inventario')] class extends Component {
     #[Url(except: null)]
     public ?int $category_id = null;
 
+    /** Show the deactivated products instead of the active ones. */
+    #[Url(as: 'inactivos', except: false)]
+    public bool $show_inactive = false;
+
     /** Show only products below their minimum or out of stock in the selling warehouse. */
     #[Url(except: false)]
     public bool $only_alerts = false;
@@ -101,7 +105,7 @@ new #[Title('Inventario')] class extends Component {
 
         return Product::query()
             ->with('supplier')
-            ->where('is_active', true)
+            ->where('is_active', ! $this->show_inactive)
             ->when($term !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('sku', 'like', "%{$term}%")
@@ -188,7 +192,7 @@ new #[Title('Inventario')] class extends Component {
             <flux:button icon="clipboard-document-check" :href="route('inventory.count')" wire:navigate>{{ __('Conteo físico') }}</flux:button>
             <flux:button icon="table-cells" :href="route('inventory.import')" wire:navigate>{{ __('Importar Excel') }}</flux:button>
             <flux:button icon="qr-code" :href="route('inventory.labels')" wire:navigate>{{ __('Etiquetas') }}</flux:button>
-            <flux:button icon="plus" :href="route('products.index')" wire:navigate>{{ __('Nuevo producto') }}</flux:button>
+            <flux:button icon="plus" :href="route('products.create')" wire:navigate>{{ __('Nuevo producto') }}</flux:button>
             <flux:button variant="primary" icon="arrow-down-tray" :href="route('inventory.entry')" wire:navigate>{{ __('Registrar entrada') }}</flux:button>
         </div>
     </div>
@@ -232,6 +236,8 @@ new #[Title('Inventario')] class extends Component {
         </flux:select>
     </div>
 
+    <flux:switch wire:model.live="show_inactive" :label="__('Ver productos inactivos')" />
+
     <flux:card class="p-0">
         <flux:table :paginate="$this->products">
             <flux:table.columns>
@@ -253,7 +259,7 @@ new #[Title('Inventario')] class extends Component {
                     <flux:table.row :key="$product->id">
                         <flux:table.cell>
                             <flux:link :href="route('inventory.kardex', $product)" wire:navigate class="font-medium">{{ $product->name }}</flux:link>
-                            <span class="block text-sm text-zinc-500">{{ $product->sku }}</span>
+                            <span class="block text-sm text-zinc-500">{{ $product->sku }} · <flux:link :href="route('products.edit', $product)" wire:navigate class="text-sm">{{ __('Editar') }}</flux:link></span>
                         </flux:table.cell>
                         <flux:table.cell>{{ $product->supplier?->name ?? '—' }}</flux:table.cell>
                         @foreach ($this->warehouses as $warehouse)
