@@ -117,7 +117,7 @@ class PhysicalCountService
                     'type' => InventoryOperationType::Adjustment,
                     'user_id' => $user->id,
                     'reason' => AdjustmentReason::PhysicalCount->value,
-                    'reference' => __('Conteo físico :date', ['date' => $count->started_at->translatedFormat('j M')]),
+                    'reference' => __('Conteo físico :date', ['date' => $count->started_at->translatedFormat('j \d\e F')]),
                     'note' => $count->note,
                     'occurred_at' => now(),
                 ]);

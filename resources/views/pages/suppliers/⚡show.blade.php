@@ -219,7 +219,7 @@ new #[Title('Proveedor')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
     <div>
-        <flux:link :href="route('suppliers.index')" wire:navigate class="text-sm">← {{ __('Proveedores') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('suppliers.index')" wire:navigate>{{ __('Proveedores') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div>
                 <div class="flex items-center gap-2">
@@ -252,17 +252,23 @@ new #[Title('Proveedor')] class extends Component {
             </flux:callout.text>
         </flux:callout>
     @else
-        <div class="grid gap-4 sm:grid-cols-3">
+        @php
+            $isPurchase = $supplier->settlement_type === \App\Models\SupplierSettlementType::Purchase;
+            $showUnsold = ! $isPurchase || bccomp($this->unsold['quantity'], '0', 3) === 1;
+        @endphp
+        <div class="grid gap-4 {{ $showUnsold ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }}">
             <flux:card class="flex flex-col gap-1">
-                <flux:text size="sm">{{ __('Por pagar (ya vendido)') }}</flux:text>
+                <flux:text size="sm">{{ $isPurchase ? __('Por pagar (lo recibido)') : __('Por pagar (ya vendido)') }}</flux:text>
                 <flux:heading size="lg">{{ $money($this->pending) }}</flux:heading>
                 <flux:text size="sm">{{ $lastPayment ? __('Desde el último pago, :date', ['date' => $lastPayment->paid_at->translatedFormat('j M')]) : __('Sin pagos registrados') }}</flux:text>
             </flux:card>
-            <flux:card class="flex flex-col gap-1">
-                <flux:text size="sm">{{ __('Producto suyo sin vender') }}</flux:text>
-                <flux:heading size="lg">{{ $money($this->unsold['value']) }}</flux:heading>
-                <flux:text size="sm">{{ __(':pieces piezas a costo · no se debe todavía', ['pieces' => $this->format($this->unsold['quantity'])]) }}</flux:text>
-            </flux:card>
+            @if ($showUnsold)
+                <flux:card class="flex flex-col gap-1">
+                    <flux:text size="sm">{{ __('Producto suyo sin vender') }}</flux:text>
+                    <flux:heading size="lg">{{ $money($this->unsold['value']) }}</flux:heading>
+                    <flux:text size="sm">{{ __(':pieces piezas a costo · no se debe todavía', ['pieces' => $this->format($this->unsold['quantity'])]) }}</flux:text>
+                </flux:card>
+            @endif
             <flux:card class="flex flex-col gap-1">
                 <flux:text size="sm">{{ __('Pagado en :year', ['year' => now()->year]) }}</flux:text>
                 <flux:heading size="lg">{{ $money($paidThisYear->sum('amount')) }}</flux:heading>
@@ -273,7 +279,7 @@ new #[Title('Proveedor')] class extends Component {
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="flex flex-col gap-6 lg:col-span-2">
                 <flux:card class="flex flex-col gap-3 p-0">
-                    <flux:heading class="px-4 pt-4">{{ __('Vendido pendiente de pago') }}</flux:heading>
+                    <flux:heading class="px-6 pt-6">{{ $isPurchase ? __('Recibido pendiente de pago') : __('Vendido pendiente de pago') }}</flux:heading>
                     <flux:table>
                         <flux:table.columns>
                             <flux:table.column>{{ __('Producto') }}</flux:table.column>
@@ -310,14 +316,14 @@ new #[Title('Proveedor')] class extends Component {
                             @endforelse
                         </flux:table.rows>
                     </flux:table>
-                    <div class="flex justify-end gap-6 px-4 pb-4 font-semibold">
+                    <div class="flex justify-end gap-6 px-6 pb-6 font-semibold">
                         <span>{{ __('Total por pagar') }}</span>
                         <span class="tabular-nums">{{ $money($this->pending) }}</span>
                     </div>
                 </flux:card>
 
                 <flux:card class="flex flex-col gap-3 p-0">
-                    <flux:heading class="px-4 pt-4">{{ __('Pagos anteriores') }}</flux:heading>
+                    <flux:heading class="px-6 pt-6">{{ __('Pagos anteriores') }}</flux:heading>
                     <flux:table>
                         <flux:table.columns>
                             <flux:table.column>{{ __('Fecha') }}</flux:table.column>

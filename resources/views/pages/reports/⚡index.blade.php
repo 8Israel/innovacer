@@ -205,7 +205,7 @@ new #[Title('Reportes')] class extends Component {
         </flux:callout>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <div class="grid items-start gap-6 lg:grid-cols-3">
         {{-- Ventas por día: one series, one hue (brand); a tooltip per bar and a table for screen readers. --}}
         <flux:card class="flex flex-col gap-4 lg:col-span-2">
             <div>
@@ -280,9 +280,9 @@ new #[Title('Reportes')] class extends Component {
         </flux:card>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <div class="grid items-start gap-6 lg:grid-cols-3">
         <flux:card class="flex flex-col gap-3 p-0 lg:col-span-2">
-            <flux:heading class="px-4 pt-4">{{ __('Más vendidos y su utilidad') }}</flux:heading>
+            <flux:heading class="px-6 pt-6">{{ __('Más vendidos y su utilidad') }}</flux:heading>
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('Producto') }}</flux:table.column>

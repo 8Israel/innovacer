@@ -92,7 +92,7 @@ new #[Title('Etiquetas')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <div>
-        <flux:link :href="route('inventory.index')" wire:navigate class="text-sm">← {{ __('Inventario') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('inventory.index')" wire:navigate>{{ __('Inventario') }}</flux:button>
         <flux:heading size="xl" class="mt-2">{{ __('Etiquetas con código de barras') }}</flux:heading>
         <flux:text class="mt-1">{{ __('Para los productos que no traen código de fábrica: se les genera uno interno y se imprime su etiqueta con precio.') }}</flux:text>
     </div>

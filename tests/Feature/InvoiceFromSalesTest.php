@@ -102,7 +102,7 @@ test('the page builds the invoice from the sale chosen in its detail and stamps 
     Livewire::withQueryParams(['venta' => $paid->id])
         ->actingAs(User::factory()->create())
         ->test('pages::invoices.from-sales')
-        ->assertSet('customer_id', $customer->id)
+        ->assertSet('customer_id', (string) $customer->id)
         ->assertSet('sale_ids', [$paid->id])
         ->assertSee('Una sola exhibición')
         ->assertSee($owed->folio)

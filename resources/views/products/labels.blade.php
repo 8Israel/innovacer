@@ -19,8 +19,9 @@
         .top { display: flex; justify-content: space-between; gap: 2mm; font-size: 7pt; line-height: 1.15; }
         .name { font-weight: 600; max-height: 2.3em; overflow: hidden; }
         .price { font-size: 9pt; font-weight: 700; white-space: nowrap; }
-        .bars { height: 13mm; }
-        .bars svg { width: 100%; height: 100%; }
+        .bars { height: 11mm; }
+        .bars svg { display: block; width: 100%; height: 100%; }
+        .digits { font-family: 'Courier New', monospace; font-size: 7pt; text-align: center; letter-spacing: 0.08em; line-height: 1; }
         .no-code { font-size: 7pt; border: 1px dashed #999; padding: 1mm; text-align: center; }
         .sku { font-size: 6pt; color: #333; }
         .actions { padding: 8px; font-family: Arial, sans-serif; }
@@ -43,7 +44,10 @@
                     @endif
                 </div>
                 @if ($label['svg'])
-                    <div class="bars">{!! $label['svg'] !!}</div>
+                    <div>
+                        <div class="bars">{!! $label['svg'] !!}</div>
+                        <div class="digits">{{ $label['digits'] }}</div>
+                    </div>
                 @else
                     <div class="no-code">{{ __('Sin código EAN-13: genera un código interno') }}</div>
                 @endif

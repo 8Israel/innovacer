@@ -57,12 +57,12 @@ new #[Title('Sesiones activas')] class extends Component {
             @foreach ($this->sessions as $session)
                 <div wire:key="session-{{ $session['id'] }}" class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="flex flex-col gap-1">
-                        <flux:text class="font-medium text-zinc-800 dark:text-white">
-                            {{ $session['browser'] }} · {{ $session['platform'] }}
+                        <div class="flex flex-wrap items-center gap-2">
+                            <flux:text class="font-medium text-zinc-800 dark:text-white">{{ $session['browser'] }} · {{ $session['platform'] }}</flux:text>
                             @if ($session['is_current'])
-                                <flux:badge size="sm" color="green" class="ms-2">{{ __('Este dispositivo') }}</flux:badge>
+                                <flux:badge size="sm" color="green">{{ __('Este dispositivo') }}</flux:badge>
                             @endif
-                        </flux:text>
+                        </div>
                         <flux:text size="sm">
                             {{ $session['ip_address'] ?? __('IP desconocida') }} · {{ __('Último uso') }} {{ $session['last_active_at']->diffForHumans() }}
                         </flux:text>

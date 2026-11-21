@@ -374,7 +374,7 @@ new #[Title('Producto')] class extends Component {
 
 <form wire:submit="save" class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <div>
-        <flux:link :href="route('inventory.index')" wire:navigate class="text-sm">← {{ __('Inventario') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('inventory.index')" wire:navigate>{{ __('Inventario') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div class="flex items-center gap-2">
                 <flux:heading size="xl">{{ $product ? $product->name : __('Nuevo producto') }}</flux:heading>
@@ -397,7 +397,7 @@ new #[Title('Producto')] class extends Component {
             <flux:card class="flex flex-col gap-4">
                 <flux:heading>{{ __('Identificación') }}</flux:heading>
                 <flux:input wire:model="name" :label="__('Nombre')" />
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid items-start gap-4 sm:grid-cols-2">
                     <flux:field>
                         <flux:label>{{ __('Clave interna') }}</flux:label>
                         <flux:input wire:model.live.debounce.400ms="sku" />
@@ -422,7 +422,7 @@ new #[Title('Producto')] class extends Component {
                         <flux:error name="barcode" />
                     </flux:field>
                 </div>
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid items-start gap-4 sm:grid-cols-2">
                     <flux:select wire:model="supplier_id" :label="__('Proveedor principal')" :placeholder="__('Elegir…')">
                         <flux:select.option value="">{{ __('Sin proveedor') }}</flux:select.option>
                         @foreach ($this->suppliers as $supplier)
@@ -436,7 +436,7 @@ new #[Title('Producto')] class extends Component {
                         @endforeach
                     </flux:select>
                 </div>
-                <div class="grid gap-4 sm:grid-cols-3">
+                <div class="grid items-start gap-4 sm:grid-cols-3">
                     <flux:input wire:model="brand" :label="__('Marca')" />
                     <flux:input wire:model="presentation" :label="__('Presentación')" :placeholder="__('Ej. 20 L')" />
                     <flux:input wire:model="unit" :label="__('Unidad de venta')" :placeholder="__('Ej. garrafa')" />
@@ -446,18 +446,18 @@ new #[Title('Producto')] class extends Component {
 
             <flux:card class="flex flex-col gap-4">
                 <flux:heading>{{ __('Precios') }}</flux:heading>
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <flux:input wire:model="reference_cost" type="number" step="0.01" min="0" :label="__('Costo de referencia')" :description="__('El costo real se guarda en cada entrada')" />
+                <div class="grid items-start gap-4 sm:grid-cols-2">
+                    <flux:input wire:model="reference_cost" type="number" step="0.01" min="0" :label="__('Costo de referencia')" />
                     <flux:input wire:model.live.debounce.400ms="unit_price" type="number" step="0.01" min="0" :label="__('Precio público (opcional)')" />
                     <flux:input wire:model="wholesale_price" type="number" step="0.01" min="0" :label="__('Precio mayoreo')" />
                     <flux:input wire:model="wholesale_min_quantity" type="number" step="any" min="0" :label="__('Mayoreo desde')" :placeholder="__('piezas')" />
                 </div>
-                <flux:text size="sm">{{ __('Sin precio público el producto sí existe en inventario y en los traspasos, pero el punto de venta no deja venderlo.') }}</flux:text>
+                <flux:text size="sm">{{ __('El costo real se guarda en cada entrada; este se usa cuando la mercancía no trae costo propio. Sin precio público el producto sí existe en inventario y en los traspasos, pero el punto de venta no deja venderlo.') }}</flux:text>
             </flux:card>
 
             <flux:card class="flex flex-col gap-4">
                 <flux:heading>{{ __('Datos para facturar') }}</flux:heading>
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid items-start gap-4 sm:grid-cols-2">
                     <div class="relative">
                         <flux:field>
                             <flux:label>{{ __('Clave de producto SAT') }}</flux:label>
@@ -513,7 +513,7 @@ new #[Title('Producto')] class extends Component {
 
             <flux:card class="flex flex-col gap-4">
                 <flux:heading>{{ __('Existencia mínima por almacén') }}</flux:heading>
-                <div class="grid gap-4 sm:grid-cols-3">
+                <div class="grid items-start gap-4 sm:grid-cols-3">
                     @foreach ($this->warehouses as $warehouse)
                         <flux:input wire:model="minimums.{{ $warehouse->id }}" type="number" step="any" min="0" :label="$warehouse->name" wire:key="minimum-{{ $warehouse->id }}" />
                     @endforeach
@@ -531,9 +531,10 @@ new #[Title('Producto')] class extends Component {
                             <span class="font-bold tabular-nums">${{ number_format($this->priceWithTax, 2) }}</span>
                         @endif
                     </div>
-                    <div class="mt-2 h-14 rounded bg-white p-1">
+                    <div class="mt-2 rounded bg-white p-1">
                         @if ($printableCode)
-                            {!! $ean13->svg($printableCode) !!}
+                            <div class="h-10">{!! $ean13->svg($printableCode) !!}</div>
+                            <div class="text-center font-mono text-xs tracking-wider text-zinc-800">{{ $ean13->digits($printableCode) }}</div>
                         @else
                             <flux:text size="sm" class="text-center">{{ __('Genera o escribe un código EAN-13') }}</flux:text>
                         @endif

@@ -51,7 +51,8 @@ class CustomerPaymentService
             ]);
         }
 
-        if ($destination === null && $customer->destinations()->exists()) {
+        // A customer with accounts pays to one of them, unless it is for sales charged without an account.
+        if ($destination === null && $customer->destinations()->exists() && $this->balances->salesWithBalance($customer)->isEmpty()) {
             throw ValidationException::withMessages([
                 'customer_destination_id' => __('Elige la cuenta a la que se aplica el abono.'),
             ]);

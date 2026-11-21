@@ -134,3 +134,20 @@ test('the printable statement shows the balances and the movements', function ()
         ->assertSeeInOrder(['Venta V-000981', '$18,000.00', 'Abono · transferencia', '$14,000.00', '$4,000.00', 'Abono · efectivo', '$2,000.00', '$8,200.00'])
         ->assertSee('El saldo de cada renglón es el de su cuenta.');
 });
+
+test('a sale charged without choosing an account can be paid as "Sin cuenta"', function () {
+    CashSession::factory()->create();
+    ['customer' => $customer] = castanonStatement();
+    $withoutAccount = Sale::factory()->for($customer)->create(['folio' => 'V-001020', 'total' => 900, 'sold_at' => '2026-10-01 10:00']);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test('pages::customers.statement', ['customer' => $customer])
+        ->assertSee('Sin cuenta · $900.00')
+        ->set('customer_destination_id', null)
+        ->set('amount', '900')
+        ->call('registerPayment')
+        ->assertHasNoErrors()
+        ->assertDontSee('Sin cuenta · $900.00');
+
+    expect(app(CustomerBalanceService::class)->pending($withoutAccount))->toBe('0.00');
+});

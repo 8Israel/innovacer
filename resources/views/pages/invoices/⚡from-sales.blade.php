@@ -15,8 +15,9 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new #[Title('Nueva factura')] class extends Component {
-    #[Url(as: 'cliente', except: null)]
-    public ?int $customer_id = null;
+    /** A string so the select keeps showing "Elige…" until a customer is chosen. */
+    #[Url(as: 'cliente', except: '')]
+    public string $customer_id = '';
 
     /** @var list<int> */
     public array $sale_ids = [];
@@ -29,7 +30,7 @@ new #[Title('Nueva factura')] class extends Component {
         $sale = $saleId ? Sale::query()->find($saleId) : null;
 
         if ($sale?->customer_id) {
-            $this->customer_id = $sale->customer_id;
+            $this->customer_id = (string) $sale->customer_id;
         }
 
         $this->loadCustomer();
@@ -48,7 +49,7 @@ new #[Title('Nueva factura')] class extends Component {
     #[Computed]
     public function customer(): ?Customer
     {
-        return $this->customer_id ? Customer::query()->find($this->customer_id) : null;
+        return $this->customer_id !== '' ? Customer::query()->find((int) $this->customer_id) : null;
     }
 
     #[Computed]
@@ -60,7 +61,7 @@ new #[Title('Nueva factura')] class extends Component {
     #[Computed]
     public function selectedSales(): Collection
     {
-        return Sale::query()->with('payments')->whereKey($this->sale_ids)->where('customer_id', $this->customer_id)->get();
+        return Sale::query()->with('payments')->whereKey($this->sale_ids)->where('customer_id', (int) $this->customer_id)->get();
     }
 
     #[Computed]
@@ -183,7 +184,7 @@ new #[Title('Nueva factura')] class extends Component {
 
             @if ($customer)
                 <flux:card class="flex flex-col gap-3 p-0">
-                    <flux:heading class="px-4 pt-4">{{ __('2. Ventas sin facturar') }}</flux:heading>
+                    <flux:heading class="px-6 pt-6">{{ __('2. Ventas sin facturar') }}</flux:heading>
                     <flux:table>
                         <flux:table.columns>
                             <flux:table.column>{{ __('Incluir') }}</flux:table.column>
@@ -208,12 +209,12 @@ new #[Title('Nueva factura')] class extends Component {
                             @endforelse
                         </flux:table.rows>
                     </flux:table>
-                    <flux:text size="sm" class="px-4 pb-4">{{ __('Una venta a crédito sin pagar se factura con método "en parcialidades o diferido".') }}</flux:text>
+                    <flux:text size="sm" class="px-6 pb-6">{{ __('Una venta a crédito sin pagar se factura con método "en parcialidades o diferido".') }}</flux:text>
                 </flux:card>
 
                 @if ($concepts->isNotEmpty())
                     <flux:card class="flex flex-col gap-3 p-0">
-                        <flux:heading class="px-4 pt-4">{{ __('3. Conceptos') }}</flux:heading>
+                        <flux:heading class="px-6 pt-6">{{ __('3. Conceptos') }}</flux:heading>
                         <flux:table>
                             <flux:table.columns>
                                 <flux:table.column>{{ __('Producto') }}</flux:table.column>

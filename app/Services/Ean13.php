@@ -70,31 +70,31 @@ class Ean13
     }
 
     /**
-     * An SVG of the bars with the digits underneath, scaled to its container's width.
+     * An SVG of the bars only (with the quiet zones), stretched to fill its container,
+     * so the code is as wide as the label allows; the digits go underneath as text.
      */
     public function svg(string $code): string
     {
         $modules = $this->modules($code);
         $quiet = 9;
         $width = strlen($modules) + $quiet * 2;
-        $barHeight = 50;
-        $guardHeight = 56;
-        $guards = [0, 1, 2, 45, 46, 47, 48, 49, 92, 93, 94];
         $bars = '';
 
         foreach (str_split($modules) as $position => $module) {
             if ($module === '1') {
-                $height = in_array($position, $guards, true) ? $guardHeight : $barHeight;
-                $bars .= '<rect x="'.($quiet + $position).'" y="0" width="1" height="'.$height.'"/>';
+                $bars .= '<rect x="'.($quiet + $position).'" y="0" width="1" height="50"/>';
             }
         }
 
-        $text = '<text x="'.($quiet - 2).'" y="64" text-anchor="end">'.$code[0].'</text>'
-            .'<text x="'.($quiet + 24).'" y="64" text-anchor="middle" textLength="38">'.substr($code, 1, 6).'</text>'
-            .'<text x="'.($quiet + 71).'" y="64" text-anchor="middle" textLength="38">'.substr($code, 7, 6).'</text>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$width.' 50" preserveAspectRatio="none" role="img" aria-label="'.$code.'">'
+            .'<g fill="#000" shape-rendering="crispEdges">'.$bars.'</g></svg>';
+    }
 
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$width.' 66" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'.$code.'">'
-            .'<g fill="#000" shape-rendering="crispEdges">'.$bars.'</g>'
-            .'<g font-family="monospace" font-size="9" fill="#000">'.$text.'</g></svg>';
+    /**
+     * The digits as printed under the bars: "7 501234 567890".
+     */
+    public function digits(string $code): string
+    {
+        return $code[0].' '.substr($code, 1, 6).' '.substr($code, 7, 6);
     }
 }

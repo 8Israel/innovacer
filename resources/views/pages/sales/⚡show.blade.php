@@ -242,7 +242,7 @@ new #[Title('Venta')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
     <div>
-        <flux:link :href="route('sales.index')" wire:navigate class="text-sm">← {{ __('Ventas') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('sales.index')" wire:navigate>{{ __('Ventas') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
                 <flux:heading size="xl">{{ __('Venta :folio', ['folio' => $sale->folio]) }}</flux:heading>
@@ -277,7 +277,7 @@ new #[Title('Venta')] class extends Component {
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="flex flex-col gap-6 lg:col-span-2">
             <flux:card class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div><flux:text size="sm">{{ __('Fecha') }}</flux:text><div class="font-medium">{{ ucfirst($sale->sold_at->translatedFormat('D j M Y · H:i')) }}</div></div>
+                <div><flux:text size="sm">{{ __('Fecha') }}</flux:text><div class="font-medium">{{ $sale->sold_at->translatedFormat('j M Y') }}</div><div class="text-sm text-zinc-500">{{ ucfirst(str_replace('.', '', $sale->sold_at->translatedFormat('l'))) }} · {{ $sale->sold_at->format('H:i') }}</div></div>
                 <div><flux:text size="sm">{{ __('Cliente') }}</flux:text><div class="font-medium">{{ $sale->customer?->name ?? __('Público en general') }}</div></div>
                 <div><flux:text size="sm">{{ __('Cuenta o destino') }}</flux:text><div class="font-medium">{{ $sale->customerDestination?->name ?? '—' }}</div></div>
                 <div><flux:text size="sm">{{ __('Salió de') }}</flux:text><div class="font-medium">{{ $sale->warehouse->name }}</div></div>

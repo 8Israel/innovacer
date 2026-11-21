@@ -34,7 +34,11 @@ new #[Title('Estado de cuenta')] class extends Component {
     public function mount(Customer $customer): void
     {
         $this->customer = $customer->load('destinations');
-        $this->customer_destination_id = $this->customer->destinations->first()?->id;
+        // Start on the first account that owes something; "Sin cuenta" when only sales without one do.
+        $owing = $this->accounts->first(fn (array $account) => bccomp($account['balance'], '0', 2) === 1);
+        $this->customer_destination_id = $owing
+            ? $owing['destination']->id
+            : (bccomp($this->unassignedBalance, '0', 2) === 1 ? null : $this->customer->destinations->first()?->id);
     }
 
     #[Computed]
@@ -56,6 +60,16 @@ new #[Title('Estado de cuenta')] class extends Component {
             'balance' => $balances->destinationBalance($destination),
             'open_sales' => $balances->salesWithBalance($this->customer, $destination)->count(),
         ]);
+    }
+
+    /**
+     * What is owed on sales charged without choosing an account, so it can be paid too.
+     */
+    #[Computed]
+    public function unassignedBalance(): string
+    {
+        return app(CustomerBalanceService::class)->salesWithBalance($this->customer)
+            ->reduce(fn (string $carry, Sale $sale) => bcadd($carry, $sale->pending, 2), '0.00');
     }
 
     #[Computed]
@@ -151,7 +165,7 @@ new #[Title('Estado de cuenta')] class extends Component {
         );
 
         $this->reset('amount', 'reference', 'note', 'start_sale_id');
-        unset($this->balance, $this->accounts, $this->lastPayment, $this->creditSales, $this->ledger, $this->openSales);
+        unset($this->balance, $this->accounts, $this->unassignedBalance, $this->lastPayment, $this->creditSales, $this->ledger, $this->openSales);
 
         Flux::toast(variant: 'success', text: __('Abono registrado.'));
     }
@@ -198,7 +212,7 @@ new #[Title('Estado de cuenta')] class extends Component {
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="flex flex-col gap-6 lg:col-span-2">
             <flux:card class="flex flex-col gap-3 p-0">
-                <flux:heading class="px-4 pt-4">{{ __('Ventas') }}</flux:heading>
+                <flux:heading class="px-6 pt-6">{{ __('Ventas') }}</flux:heading>
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>{{ __('Venta') }}</flux:table.column>
@@ -235,7 +249,7 @@ new #[Title('Estado de cuenta')] class extends Component {
             </flux:card>
 
             <flux:card class="flex flex-col gap-3 p-0">
-                <div class="flex flex-wrap items-center justify-between gap-3 px-4 pt-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 px-6 pt-6">
                     <flux:heading>{{ __('Movimientos') }}</flux:heading>
                     @if ($customer->destinations->isNotEmpty())
                         <flux:radio.group wire:model.live="ledger_destination_id" variant="segmented" size="sm">
@@ -293,6 +307,9 @@ new #[Title('Estado de cuenta')] class extends Component {
                             @foreach ($this->accounts as $account)
                                 <flux:select.option :value="$account['destination']->id">{{ $account['destination']->name }} · {{ $money($account['balance']) }}</flux:select.option>
                             @endforeach
+                            @if (bccomp($this->unassignedBalance, '0', 2) === 1)
+                                <flux:select.option value="">{{ __('Sin cuenta') }} · {{ $money($this->unassignedBalance) }}</flux:select.option>
+                            @endif
                         </flux:select>
                     @endif
 

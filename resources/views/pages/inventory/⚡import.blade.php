@@ -105,7 +105,7 @@ new #[Title('Importar productos')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <div>
-        <flux:link :href="route('inventory.index')" wire:navigate class="text-sm">← {{ __('Inventario') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('inventory.index')" wire:navigate>{{ __('Inventario') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <flux:heading size="xl">{{ __('Importar productos desde Excel') }}</flux:heading>
             <flux:button icon="arrow-down-tray" wire:click="downloadTemplate" data-test="download-template-button">{{ __('Descargar plantilla (.xlsx)') }}</flux:button>

@@ -35,7 +35,7 @@ new #[Title('Corte de caja')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <div>
-        <flux:link :href="route('cash.history')" wire:navigate class="text-sm">← {{ __('Cortes de caja') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('cash.history')" wire:navigate>{{ __('Cortes de caja') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div>
                 <div class="flex items-center gap-2">

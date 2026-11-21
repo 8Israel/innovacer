@@ -72,7 +72,8 @@ new #[Title('Punto de venta')] class extends Component {
     public bool $leave_rest_on_credit = false;
 
     // Authorization (docs/diseno/Autorizacion.html)
-    public ?int $authorizer_id = null;
+    /** A string so the select keeps showing "Elige…" until someone is chosen. */
+    public string $authorizer_id = '';
     public string $authorizer_password = '';
     public string $authorization_note = '';
     public ?string $authorization_needed_for = null;
@@ -435,7 +436,7 @@ new #[Title('Punto de venta')] class extends Component {
         $this->validate(['authorizer_id' => ['required', 'integer']]);
 
         $authorization = new SaleAuthorization(
-            User::query()->where('is_active', true)->findOrFail($this->authorizer_id),
+            User::query()->where('is_active', true)->findOrFail((int) $this->authorizer_id),
             $this->authorizer_password,
             $this->authorization_note ?: null,
         );
@@ -521,6 +522,7 @@ new #[Title('Punto de venta')] class extends Component {
             'authorization_owner_only', 'resuming_sale_id', 'hold_note',
         );
         $this->resetErrorBag();
+        unset($this->cartProducts, $this->stock, $this->minimums, $this->customer, $this->customerBalance, $this->quote);
     }
 
     /**
@@ -698,9 +700,9 @@ new #[Title('Punto de venta')] class extends Component {
     $qty = fn ($value) => rtrim(rtrim(number_format((float) $value, 3, '.', ''), '0'), '.');
 @endphp
 
-<div class="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-3">
+<div class="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
     {{-- Cart --}}
-    <div class="flex flex-col gap-4 lg:col-span-2">
+    <div class="flex flex-col gap-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <flux:heading size="xl">{{ $resuming_sale_id ? __('Venta pendiente') : __('Nueva venta') }}</flux:heading>
@@ -788,7 +790,7 @@ new #[Title('Punto de venta')] class extends Component {
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>{{ __('Producto') }}</flux:table.column>
-                        <flux:table.column>{{ __('Existencia') }}</flux:table.column>
+                        <flux:table.column class="hidden 2xl:table-cell">{{ __('Existencia') }}</flux:table.column>
                         <flux:table.column>{{ __('Cant.') }}</flux:table.column>
                         <flux:table.column>{{ __('Precio') }}</flux:table.column>
                         <flux:table.column align="end">{{ __('Importe') }}</flux:table.column>
@@ -810,8 +812,10 @@ new #[Title('Punto de venta')] class extends Component {
                                 <flux:table.cell>
                                     <span class="font-medium">{{ $product->name }}</span>
                                     <span class="block text-sm text-zinc-500">{{ $product->sku }}{{ $product->brand ? ' · '.$product->brand : '' }}</span>
+                                    {{-- On narrower screens the stock goes under the name instead of its own column. --}}
+                                    <span class="block text-sm 2xl:hidden {{ $left < 0 ? 'font-medium text-red-700 dark:text-red-400' : 'text-zinc-500' }}">{{ __('Hay :available → quedan :left', ['available' => $qty($available), 'left' => $qty(max($left, 0))]) }}</span>
                                 </flux:table.cell>
-                                <flux:table.cell>
+                                <flux:table.cell class="hidden 2xl:table-cell">
                                     <span class="{{ $left < 0 ? 'font-medium text-red-700 dark:text-red-400' : '' }}">
                                         {{ $qty($available) }} → {{ __('quedan :left', ['left' => $qty(max($left, 0))]) }}
                                     </span>
@@ -822,11 +826,13 @@ new #[Title('Punto de venta')] class extends Component {
                                     @endif
                                 </flux:table.cell>
                                 <flux:table.cell class="w-24">
-                                    <flux:input wire:model.live.debounce.400ms="lines.{{ $productId }}.quantity" type="number" step="any" min="0" size="sm" />
+                                    <div class="min-w-16">
+                                        <flux:input wire:model.live.debounce.400ms="lines.{{ $productId }}.quantity" type="number" step="any" min="0" size="sm" />
+                                    </div>
                                 </flux:table.cell>
                                 <flux:table.cell class="w-40">
                                     @if ($product->wholesale_price !== null)
-                                        <flux:select wire:model.live="lines.{{ $productId }}.price_type" size="sm">
+                                        <flux:select wire:model.live="lines.{{ $productId }}.price_type" size="sm" class="min-w-32">
                                             <flux:select.option value="public">{{ $money($product->unit_price) }}</flux:select.option>
                                             <flux:select.option value="wholesale">{{ __('Mayoreo') }} {{ $money($product->wholesale_price) }}</flux:select.option>
                                         </flux:select>
@@ -938,7 +944,7 @@ new #[Title('Punto de venta')] class extends Component {
                 <flux:radio value="card" :label="__('Tarjeta')" />
                 <flux:radio value="transfer" :label="__('Transferencia')" />
                 @if ($this->customer?->hasCredit())
-                    <flux:radio value="credit" :label="__('A crédito')" />
+                    <flux:radio value="credit" :label="__('Crédito')" />
                 @endif
             </flux:radio.group>
 
@@ -973,7 +979,7 @@ new #[Title('Punto de venta')] class extends Component {
 
             <div class="grid grid-cols-2 gap-2">
                 <flux:button size="sm" wire:click="openSplitPayment" :disabled="! $this->quote || ! $this->openSession">
-                    {{ __('Pagar con varias formas') }}
+                    {{ __('Pago mixto') }}
                 </flux:button>
                 <flux:modal.trigger name="hold-sale">
                     <flux:button size="sm" :disabled="! $this->quote">{{ __('Dejar pendiente') }}</flux:button>

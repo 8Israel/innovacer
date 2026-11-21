@@ -60,6 +60,24 @@
     }
 }
 
+/* Grid items may shrink below their content, so a wide table scrolls inside its card instead of widening the page. */
+.grid > * {
+    min-width: 0;
+}
+
+/* A table inside a card without padding keeps the card's inner margin, like the rest of its content. */
+[data-flux-card].p-0 :is([data-flux-column], [data-flux-cell]):first-child {
+    padding-inline-start: 1.5rem;
+}
+
+[data-flux-card].p-0 :is([data-flux-column], [data-flux-cell]):last-child {
+    padding-inline-end: 1.5rem;
+}
+
+[data-flux-card].p-0 [data-flux-pagination] {
+    padding: 0 1.5rem 0.75rem;
+}
+
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }

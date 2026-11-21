@@ -32,6 +32,7 @@ new #[Title('Traspaso entre almacenes')] class extends Component {
     public function mount(): void
     {
         $this->to_warehouse_id = Warehouse::query()->where('is_sellable', true)->where('is_active', true)->value('id');
+        $this->from_warehouse_id ??= Warehouse::query()->where('is_active', true)->whereKeyNot($this->to_warehouse_id)->orderBy('is_sellable')->orderBy('id')->value('id');
     }
 
     #[Computed]
@@ -127,7 +128,7 @@ new #[Title('Traspaso entre almacenes')] class extends Component {
 
 @php
     $qty = fn ($value) => rtrim(rtrim(number_format((float) $value, 3, '.', ''), '0'), '.');
-    $owner = fn (?Warehouse $warehouse) => $warehouse?->isLoanWarehouse() ? $warehouse->lender?->name : config('app.name');
+    $owner = fn (?Warehouse $warehouse) => $warehouse?->isLoanWarehouse() ? $warehouse->lender?->name : __('el de cada lote (:business o su proveedor)', ['business' => setting('business_name', config('app.name'))]);
 @endphp
 
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">

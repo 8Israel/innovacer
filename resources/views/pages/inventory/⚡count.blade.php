@@ -189,7 +189,7 @@ new #[Title('Conteo físico')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
     <div>
-        <flux:link :href="route('inventory.index')" wire:navigate class="text-sm print:hidden">← {{ __('Inventario') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('inventory.index')" wire:navigate class="print:hidden">{{ __('Inventario') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
             <div>
                 <flux:heading size="xl">{{ __('Conteo físico') }}</flux:heading>
@@ -227,7 +227,7 @@ new #[Title('Conteo físico')] class extends Component {
     @else
         <div class="grid gap-6 lg:grid-cols-3">
             <flux:card class="flex flex-col gap-4 p-0 lg:col-span-2">
-                <div class="flex flex-wrap items-center justify-between gap-3 px-4 pt-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 px-6 pt-6">
                     <flux:heading>{{ __(':counted de :total productos contados', ['counted' => $countedRows->count(), 'total' => $rows->count()]) }}</flux:heading>
                     <div class="w-full sm:w-72 print:hidden">
                         <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Escanea o busca el producto')" />
@@ -235,7 +235,7 @@ new #[Title('Conteo físico')] class extends Component {
                 </div>
 
                 @if ($this->extraProducts->isNotEmpty())
-                    <div class="flex flex-wrap gap-2 px-4 print:hidden">
+                    <div class="flex flex-wrap gap-2 px-6 print:hidden">
                         <flux:text size="sm">{{ __('No está en la lista:') }}</flux:text>
                         @foreach ($this->extraProducts as $product)
                             <flux:button size="xs" icon="plus" wire:click="addProduct({{ $product->id }})">{{ $product->name }}</flux:button>
@@ -282,7 +282,7 @@ new #[Title('Conteo físico')] class extends Component {
                         @endforeach
                     </flux:table.rows>
                 </flux:table>
-                <flux:error name="counted_quantity" class="px-4 pb-4" />
+                <flux:error name="counted_quantity" class="px-6 pb-6" />
             </flux:card>
 
             <div class="flex flex-col gap-4 print:hidden">
@@ -303,7 +303,7 @@ new #[Title('Conteo físico')] class extends Component {
                         </div>
                     @endif
                     <flux:text size="sm">
-                        {{ trans_choice('Al aplicar se crea :count ajuste en el kardex con motivo ":reason". Lo no contado no se toca.|Al aplicar se crean :count ajustes en el kardex con motivo ":reason". Lo no contado no se toca.', $this->differences->count(), ['reason' => __('Conteo físico :date', ['date' => $this->count->started_at->translatedFormat('j M')])]) }}
+                        {{ trans_choice('Al aplicar se crea :count ajuste en el kardex con motivo ":reason". Lo no contado no se toca.|Al aplicar se crean :count ajustes en el kardex con motivo ":reason". Lo no contado no se toca.', $this->differences->count(), ['reason' => __('Conteo físico :date', ['date' => $this->count->started_at->translatedFormat('j \d\e F')])]) }}
                     </flux:text>
                 </flux:card>
 

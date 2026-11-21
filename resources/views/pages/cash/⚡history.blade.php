@@ -92,7 +92,7 @@ new #[Title('Cortes de caja')] class extends Component {
 
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
     <div>
-        <flux:link :href="route('cash.index')" wire:navigate class="text-sm">← {{ __('Caja de hoy') }}</flux:link>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('cash.index')" wire:navigate>{{ __('Caja de hoy') }}</flux:button>
         <div class="mt-2 flex flex-wrap items-end justify-between gap-3">
             <flux:heading size="xl">{{ __('Cortes de caja') }}</flux:heading>
             <div class="flex flex-wrap gap-3">

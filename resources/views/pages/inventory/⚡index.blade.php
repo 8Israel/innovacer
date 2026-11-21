@@ -203,9 +203,11 @@ new #[Title('Inventario')] class extends Component {
     @endphp
     @if ($this->sellingWarehouse && ($belowMinimum > 0 || $outOfStock > 0))
         <flux:callout variant="warning" icon="exclamation-triangle">
-            <flux:callout.heading>{{ __(':below y :out en :warehouse.', [
-                'below' => trans_choice(':count producto bajo el mínimo|:count productos bajo el mínimo', $belowMinimum),
-                'out' => trans_choice(':count agotado|:count agotados', $outOfStock),
+            <flux:callout.heading>{{ __(':alerts en :warehouse.', [
+                'alerts' => collect([
+                    $belowMinimum > 0 ? trans_choice(':count producto bajo el mínimo|:count productos bajo el mínimo', $belowMinimum) : null,
+                    $outOfStock > 0 ? trans_choice(':count agotado|:count agotados', $outOfStock) : null,
+                ])->filter()->join(' y '),
                 'warehouse' => $this->sellingWarehouse->name,
             ]) }}</flux:callout.heading>
             <x-slot name="actions">

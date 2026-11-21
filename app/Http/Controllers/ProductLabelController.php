@@ -44,6 +44,7 @@ class ProductLabelController extends Controller
             $label = [
                 'product' => $product,
                 'svg' => $code ? $ean13->svg($code) : null,
+                'digits' => $code ? $ean13->digits($code) : null,
                 'price' => $this->priceWithTaxes($product),
             ];
 

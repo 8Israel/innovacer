@@ -17,7 +17,8 @@ use Livewire\Component;
 new #[Title('Entrada de mercancía')] class extends Component {
     use SearchesProducts;
 
-    public ?int $supplier_id = null;
+    /** A string so the select keeps showing "Elige…" until a supplier is chosen. */
+    public string $supplier_id = '';
     public ?int $warehouse_id = null;
     /** 'consignment' (paid as it sells) or 'purchase' (bought, owned by the business). */
     public string $arrival = 'consignment';
@@ -60,7 +61,7 @@ new #[Title('Entrada de mercancía')] class extends Component {
     #[Computed]
     public function supplier(): ?Supplier
     {
-        return $this->suppliers->firstWhere('id', $this->supplier_id);
+        return $this->suppliers->firstWhere('id', (int) $this->supplier_id);
     }
 
     #[Computed]
@@ -270,7 +271,11 @@ new #[Title('Entrada de mercancía')] class extends Component {
             @endif
 
             <flux:button variant="primary" wire:click="receive" :disabled="$lines === []" data-test="receive-button">{{ __('Registrar entrada') }}</flux:button>
-            <flux:text size="sm">{{ __('¿Llegó un producto nuevo? Dalo de alta en Productos y regresa a esta entrada.') }}</flux:text>
+            <flux:text size="sm">
+                {{ __('¿Llegó un producto nuevo?') }}
+                <flux:link :href="route('products.create')" wire:navigate>{{ __('Dalo de alta') }}</flux:link>
+                {{ __('y regresa a esta entrada.') }}
+            </flux:text>
         </flux:card>
     </div>
 </div>

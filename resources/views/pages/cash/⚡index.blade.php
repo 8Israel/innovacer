@@ -22,7 +22,7 @@ new #[Title('Caja')] class extends Component {
     // Nueva salida de efectivo
     public string $amount = '';
     public string $category = 'expense';
-    public ?int $supplier_id = null;
+    public string $supplier_id = '';
     public string $beneficiary = '';
     public string $note = '';
 
@@ -119,7 +119,7 @@ new #[Title('Caja')] class extends Component {
     {
         $category = CashMovementCategory::from($this->category);
         $supplier = $category === CashMovementCategory::SupplierExpense && $this->supplier_id
-            ? Supplier::query()->findOrFail($this->supplier_id)
+            ? Supplier::query()->findOrFail((int) $this->supplier_id)
             : null;
 
         $cashSessions->recordMovement(

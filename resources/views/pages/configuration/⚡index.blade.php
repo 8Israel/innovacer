@@ -337,11 +337,13 @@ new #[Title('Configuración')] class extends Component {
                                 <flux:table.cell class="whitespace-nowrap">
                                     {{ $lastAccess ? ($lastAccess->isToday() ? __('Hoy :time', ['time' => $lastAccess->format('H:i')]) : $lastAccess->translatedFormat('j M · H:i')) : '—' }}
                                 </flux:table.cell>
-                                <flux:table.cell align="end" class="whitespace-nowrap">
-                                    <flux:button size="xs" variant="ghost" wire:click="editUser({{ $user->id }})">{{ __('Editar') }}</flux:button>
-                                    @unless ($user->is(auth()->user()))
-                                        <flux:button size="xs" variant="ghost" wire:click="startPasswordReset({{ $user->id }})">{{ __('Restablecer contraseña') }}</flux:button>
-                                    @endunless
+                                <flux:table.cell align="end">
+                                    <div class="flex flex-col items-end gap-1">
+                                        <flux:button size="xs" variant="ghost" wire:click="editUser({{ $user->id }})">{{ __('Editar') }}</flux:button>
+                                        @unless ($user->is(auth()->user()))
+                                            <flux:button size="xs" variant="ghost" wire:click="startPasswordReset({{ $user->id }})">{{ __('Nueva contraseña') }}</flux:button>
+                                        @endunless
+                                    </div>
                                 </flux:table.cell>
                             </flux:table.row>
                         @endforeach

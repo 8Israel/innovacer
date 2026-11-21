@@ -63,7 +63,7 @@ test('the supplier file previews and registers a payment spread over the oldest 
 
     Livewire::actingAs(User::factory()->owner()->create())
         ->test('pages::suppliers.show', ['supplier' => $nh])
-        ->assertSeeInOrder(['Por pagar (ya vendido)', '$7,000.00', 'Bigfix 1 L', '12', '$350.00', '$4,200.00', 'Sumo 1 L', '10', '$280.00', '$2,800.00'])
+        ->assertSeeInOrder(['Por pagar (lo recibido)', '$7,000.00', 'Bigfix 1 L', '12', '$350.00', '$4,200.00', 'Sumo 1 L', '10', '$280.00', '$2,800.00'])
         ->set('amount', '5000')
         ->assertSeeInOrder(['Bigfix 1 L', 'Se liquida', 'Sumo 1 L', 'Abona $800.00', 'quedan $2,000.00'])
         ->assertSeeInOrder(['Queda por pagar', '$2,000.00'])
