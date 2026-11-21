@@ -19,6 +19,9 @@ enum AdjustmentReason: string
     /** Sobrante. */
     case Surplus = 'surplus';
 
+    /** Applied from a full physical count of a warehouse (PhysicalCountService); goes either way. */
+    case PhysicalCount = 'physical_count';
+
     public function label(): string
     {
         return match ($this) {
@@ -26,7 +29,18 @@ enum AdjustmentReason: string
             self::Damage => __('Merma o producto dañado'),
             self::CaptureError => __('Error de captura anterior'),
             self::Surplus => __('Sobrante'),
+            self::PhysicalCount => __('Conteo físico'),
         };
+    }
+
+    /**
+     * Reasons offered when adjusting a single product by hand.
+     *
+     * @return list<self>
+     */
+    public static function manual(): array
+    {
+        return [self::Shortage, self::Damage, self::CaptureError, self::Surplus];
     }
 
     public function allowsShortage(): bool
@@ -36,6 +50,6 @@ enum AdjustmentReason: string
 
     public function allowsSurplus(): bool
     {
-        return in_array($this, [self::Surplus, self::CaptureError], true);
+        return in_array($this, [self::Surplus, self::CaptureError, self::PhysicalCount], true);
     }
 }

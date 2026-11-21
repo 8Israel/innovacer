@@ -23,7 +23,7 @@
                     </flux:sidebar.item>
                 @endcan
                 @can(\App\Models\Permission::ManageInventory->value)
-                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.index', 'inventory.entry', 'inventory.kardex')" wire:navigate>
+                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.index', 'inventory.entry', 'inventory.kardex', 'inventory.count')" wire:navigate>
                         {{ __('Inventario') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="arrows-right-left" :href="route('inventory.transfer')" :current="request()->routeIs('inventory.transfer', 'inventory.loans')" wire:navigate>

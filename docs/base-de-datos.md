@@ -1,6 +1,6 @@
 # Base de datos — Sistema de Inventario y Punto de Venta
 
-Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
+Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
 
 ## Cómo leer este documento
 
@@ -32,7 +32,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 
 - **Usuarios y acceso:** [`users`](#users), [`passkeys`](#passkeys), [`password_reset_tokens`](#password_reset_tokens), [`sessions`](#sessions)
 - **Catálogos:** [`categories`](#categories), [`products`](#products), [`suppliers`](#suppliers), [`warehouses`](#warehouses), [`stock_minimums`](#stock_minimums)
-- **Inventario:** [`inventory_operations`](#inventory_operations), [`lots`](#lots), [`stocks`](#stocks), [`inventory_movements`](#inventory_movements), [`loan_entries`](#loan_entries)
+- **Inventario:** [`inventory_operations`](#inventory_operations), [`lots`](#lots), [`stocks`](#stocks), [`inventory_movements`](#inventory_movements), [`loan_entries`](#loan_entries), [`physical_counts`](#physical_counts), [`physical_count_items`](#physical_count_items)
 - **Clientes:** [`customers`](#customers), [`customer_destinations`](#customer_destinations)
 - **Ventas:** [`sales`](#sales), [`sale_items`](#sale_items), [`sale_payments`](#sale_payments)
 - **Devoluciones:** [`customer_returns`](#customer_returns), [`customer_return_items`](#customer_return_items)
@@ -213,7 +213,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `user_id` | Usuario | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién registró la operación. |
 | `supplier_id` | Proveedor | `bigint unsigned` | Sí | — | Relación → `suppliers.id` (al borrar: restringir) | Proveedor que entregó la mercancía (en entradas). |
 | `responsible` | Responsable | `varchar(255)` | Sí | — | — | Quién se llevó el producto en salidas (p. ej. "Ing. Meléndez"). |
-| `reason` | Motivo | `varchar(255)` | Sí | — | — | Motivo de salidas (texto libre: muestra, experimento…). En ajustes: `shortage` (faltante sin explicar), `damage` (merma o producto dañado), `capture_error` (error de captura anterior), `surplus` (sobrante). |
+| `reason` | Motivo | `varchar(255)` | Sí | — | — | Motivo de salidas (texto libre: muestra, experimento…). En ajustes: `shortage` (faltante sin explicar), `damage` (merma o producto dañado), `capture_error` (error de captura anterior), `surplus` (sobrante), `physical_count` (conteo físico completo de un almacén). |
 | `note` | Nota | `text` | Sí | — | — | Nota libre. Obligatoria en traspasos (se valida en la aplicación). |
 | `reference` | Referencia | `varchar(255)` | Sí | — | — | Folio o documento relacionado (remisión del proveedor, etc.). |
 | `reversal_of_id` | Reversa de | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | Si esta operación corrige otra, aquí va la operación original. |
@@ -308,6 +308,46 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 - `lender_id` + `product_id` — Índice (para buscar más rápido)
 
 ---
+
+### physical_counts
+
+**Conteos físicos.** Conteo de todo un almacén (Tarea 10). Se puede guardar y seguir después; al aplicarlo se crea **una** operación de ajuste con motivo `physical_count` y un movimiento por cada producto contado que no cuadra. Lo no contado no se toca. Solo puede haber un conteo en curso por almacén (lo cuida el sistema).
+
+| Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
+|---|---|---|---|---|---|---|
+| `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
+| `warehouse_id` | Almacén | `bigint unsigned` | No | — | Relación → `warehouses.id` (al borrar: restringir) | Almacén que se cuenta. |
+| `started_by_id` | Iniciado por | `bigint unsigned` | No | — | Relación → `users.id` (al borrar: restringir) | Quién empezó el conteo. |
+| `started_at` | Iniciado el | `timestamp` | No | — | — | Cuándo empezó. |
+| `status` | Estado | `varchar(255)` | No | `in_progress` | — | Valores: `in_progress` (en curso), `applied` (aplicado), `canceled` (cancelado). |
+| `applied_by_id` | Aplicado por | `bigint unsigned` | Sí | — | Relación → `users.id` (al borrar: restringir) | Quién lo aplicó. |
+| `applied_at` | Aplicado el | `timestamp` | Sí | — | — | Cuándo se aplicó. |
+| `inventory_operation_id` | Operación | `bigint unsigned` | Sí | — | Relación → `inventory_operations.id` (al borrar: restringir) | El ajuste que generó. Vacío si todo lo contado cuadró. |
+| `note` | Nota | `text` | Sí | — | — | Observaciones del conteo. |
+| `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
+| `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
+
+**Índices combinados:**
+
+- `warehouse_id` + `status` — Índice para encontrar el conteo en curso
+
+### physical_count_items
+
+**Renglones del conteo.** Un producto del almacén con lo que decía el sistema al empezar y lo que se contó.
+
+| Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
+|---|---|---|---|---|---|---|
+| `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
+| `physical_count_id` | Conteo | `bigint unsigned` | No | — | Relación → `physical_counts.id` (al borrar: en cascada) | Conteo al que pertenece. |
+| `product_id` | Producto | `bigint unsigned` | No | — | Relación → `products.id` (al borrar: restringir) | Producto contado. |
+| `system_quantity` | Según sistema | `decimal(12,3)` | No | — | — | Existencia al empezar el conteo. Al aplicar, la diferencia se toma contra la existencia de ese momento, por si se vendió mientras. |
+| `counted_quantity` | Contado | `decimal(12,3)` | Sí | — | — | Lo que se contó. Vacío = sin contar (no se ajusta). |
+| `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
+| `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
+
+**Índices combinados:**
+
+- `physical_count_id` + `product_id` — Único (cada producto una vez por conteo)
 
 ## Clientes
 

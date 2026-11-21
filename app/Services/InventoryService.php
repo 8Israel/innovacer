@@ -304,24 +304,50 @@ class InventoryService
                 'occurred_at' => now(),
             ]);
 
-            if ($sign < 0) {
-                $this->takeFifo($operation, $product, $warehouse, bcsub('0', $difference, self::SCALE));
-
-                return $operation;
-            }
-
-            $lot = Lot::create([
-                'product_id' => $product->id,
-                'inventory_operation_id' => $operation->id,
-                'unit_cost' => $product->reference_cost,
-                'quantity_received' => $difference,
-                'received_at' => now(),
-            ]);
-
-            $this->putIntoLots($operation, $product, $warehouse, [['lot_id' => $lot->id, 'quantity' => $difference]]);
+            $this->applyDifference($operation, $product, $warehouse, $difference);
 
             return $operation;
         });
+    }
+
+    /**
+     * Bring a product's stock in a warehouse to the counted quantity inside an
+     * adjustment operation already open (e.g. one per physical count). Must run
+     * inside a transaction. Returns the difference applied ("0.000" when it matched).
+     */
+    public function adjustWithin(InventoryOperation $operation, Product $product, Warehouse $warehouse, string $countedQuantity): string
+    {
+        $countedQuantity = $this->quantity($countedQuantity, 'counted_quantity', allowZero: true);
+        $difference = bcsub($countedQuantity, $this->total($this->lockStocks($product, $warehouse)), self::SCALE);
+
+        if (bccomp($difference, '0', self::SCALE) !== 0) {
+            $this->applyDifference($operation, $product, $warehouse, $difference);
+        }
+
+        return $difference;
+    }
+
+    /**
+     * A shortage leaves the oldest lots first; a surplus enters as a new lot owned
+     * by the business at the product's reference cost.
+     */
+    private function applyDifference(InventoryOperation $operation, Product $product, Warehouse $warehouse, string $difference): void
+    {
+        if (bccomp($difference, '0', self::SCALE) < 0) {
+            $this->takeFifo($operation, $product, $warehouse, bcsub('0', $difference, self::SCALE));
+
+            return;
+        }
+
+        $lot = Lot::create([
+            'product_id' => $product->id,
+            'inventory_operation_id' => $operation->id,
+            'unit_cost' => $product->reference_cost,
+            'quantity_received' => $difference,
+            'received_at' => $operation->occurred_at ?? now(),
+        ]);
+
+        $this->putIntoLots($operation, $product, $warehouse, [['lot_id' => $lot->id, 'quantity' => $difference]]);
     }
 
     /**

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -138,7 +139,7 @@ new #[Title('Kardex de producto')] class extends Component {
     {
         $this->validate([
             'adjust_warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
-            'reason' => ['required', 'string'],
+            'reason' => ['required', Rule::in(array_map(fn (AdjustmentReason $reason) => $reason->value, AdjustmentReason::manual()))],
         ], attributes: ['reason' => __('motivo')]);
 
         $inventory->adjust(
@@ -326,7 +327,7 @@ new #[Title('Kardex de producto')] class extends Component {
             </div>
 
             <flux:radio.group wire:model="reason" :label="__('Motivo')">
-                @foreach (\App\Models\AdjustmentReason::cases() as $adjustmentReason)
+                @foreach (\App\Models\AdjustmentReason::manual() as $adjustmentReason)
                     <flux:radio :value="$adjustmentReason->value" :label="$adjustmentReason->label()" />
                 @endforeach
             </flux:radio.group>

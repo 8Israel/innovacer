@@ -185,6 +185,7 @@ new #[Title('Inventario')] class extends Component {
         <div class="flex flex-wrap gap-2">
             <flux:button icon="arrows-right-left" :href="route('inventory.transfer')" wire:navigate>{{ __('Traspaso') }}</flux:button>
             <flux:button icon="arrow-uturn-left" :href="route('inventory.loans')" wire:navigate>{{ __('Préstamos') }}</flux:button>
+            <flux:button icon="clipboard-document-check" :href="route('inventory.count')" wire:navigate>{{ __('Conteo físico') }}</flux:button>
             <flux:button icon="plus" :href="route('products.index')" wire:navigate>{{ __('Nuevo producto') }}</flux:button>
             <flux:button variant="primary" icon="arrow-down-tray" :href="route('inventory.entry')" wire:navigate>{{ __('Registrar entrada') }}</flux:button>
         </div>
