@@ -256,7 +256,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `warehouse_id` | Almacén | `bigint unsigned` | No | — | Relación → `warehouses.id` (al borrar: restringir) | Dónde está. |
 | `lot_id` | Lote | `bigint unsigned` | No | — | Relación → `lots.id` (al borrar: restringir) | De qué lote es. |
 | `product_id` | Producto | `bigint unsigned` | No | — | Relación → `products.id` (al borrar: restringir) | Producto (copiado del lote para buscar más rápido). |
-| `quantity` | Cantidad | `decimal(12,3)` | No | `0.000` | — | Cantidad disponible. |
+| `quantity` | Cantidad | `decimal(12,3)` | No | `0.000` | Nunca negativa (`CHECK quantity >= 0`) | Cantidad disponible. |
 | `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
 | `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
 
@@ -396,7 +396,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 | Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
 |---|---|---|---|---|---|---|
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
-| `sale_id` | Venta | `bigint unsigned` | No | — | Relación → `sales.id` (al borrar: en cascada) | Venta a la que pertenece. |
+| `sale_id` | Venta | `bigint unsigned` | No | — | Relación → `sales.id` (al borrar: restringir) | Venta a la que pertenece. |
 | `product_id` | Producto | `bigint unsigned` | No | — | Relación → `products.id` (al borrar: restringir) | Producto vendido. |
 | `quantity` | Cantidad | `decimal(12,3)` | No | — | — | Cuánto se vendió. |
 | `price_type` | Tipo de precio | `varchar(255)` | No | `public` | — | Valores: `public` (público), `wholesale` (mayoreo). |
@@ -420,7 +420,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 |---|---|---|---|---|---|---|
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `cash_session_id` | Sesión de caja | `bigint unsigned` | Sí | — | Relación → `cash_sessions.id` (al borrar: restringir) | Sesión de caja en la que se registró (en ventas: en la que se completó). Vacío si no pasó por la caja. |
-| `sale_id` | Venta | `bigint unsigned` | No | — | Relación → `sales.id` (al borrar: en cascada) | Venta que se paga. |
+| `sale_id` | Venta | `bigint unsigned` | No | — | Relación → `sales.id` (al borrar: restringir) | Venta que se paga. |
 | `method` | Forma de pago | `varchar(255)` | No | — | — | Valores: `cash` (efectivo), `card` (tarjeta), `transfer` (transferencia). |
 | `amount` | Monto | `decimal(12,2)` | No | — | — | Cuánto se abonó a la venta con esta forma de pago. |
 | `received_amount` | Monto recibido | `decimal(12,2)` | Sí | — | — | Dinero que entregó el cliente (en efectivo). |
@@ -642,7 +642,7 @@ Desglose de las 37 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `invoice_id` | Factura | `bigint unsigned` | No | — | Relación → `invoices.id` (al borrar: en cascada) | Factura a la que pertenece. |
 | `product_id` | Producto | `bigint unsigned` | No | — | Relación → `products.id` (al borrar: restringir) | Producto facturado. |
-| `quantity` | Cantidad | `decimal(10,2)` | No | — | — | Cantidad facturada. |
+| `quantity` | Cantidad | `decimal(12,3)` | No | — | — | Cantidad facturada. |
 | `unit_price` | Precio unitario | `decimal(12,2)` | No | — | — | Precio por unidad sin impuestos. |
 | `tax_rate` | Tasa de IVA | `decimal(5,4)` | No | — | — | IVA aplicado, como fracción. |
 | `subtotal` | Subtotal | `decimal(12,2)` | No | — | — | Importe antes de impuestos. |
