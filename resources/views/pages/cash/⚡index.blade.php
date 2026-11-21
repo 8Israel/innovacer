@@ -195,17 +195,23 @@ new #[Title('Caja')] class extends Component {
                 </flux:button>
             </form>
         </flux:card>
+        <div class="text-center">
+            <flux:link :href="route('cash.history')" wire:navigate class="text-sm">{{ __('Ver cortes anteriores') }}</flux:link>
+        </div>
     @else
         {{-- docs/diseno/Caja.html --}}
-        <div>
-            <flux:heading size="xl">{{ __('Caja de hoy') }}</flux:heading>
-            <flux:text class="mt-1">
-                {{ __('Abierta a las :time por :user con fondo de :amount', [
-                    'time' => $this->openSession->opened_at->format('H:i'),
-                    'user' => $this->openSession->openedBy->name,
-                    'amount' => $money($this->openSession->opening_cash),
-                ]) }}
-            </flux:text>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <flux:heading size="xl">{{ __('Caja de hoy') }}</flux:heading>
+                <flux:text class="mt-1">
+                    {{ __('Abierta a las :time por :user con fondo de :amount', [
+                        'time' => $this->openSession->opened_at->format('H:i'),
+                        'user' => $this->openSession->openedBy->name,
+                        'amount' => $money($this->openSession->opening_cash),
+                    ]) }}
+                </flux:text>
+            </div>
+            <flux:button icon="clock" :href="route('cash.history')" wire:navigate>{{ __('Cortes anteriores') }}</flux:button>
         </div>
 
         <div class="grid grid-cols-2 gap-4 md:grid-cols-5">

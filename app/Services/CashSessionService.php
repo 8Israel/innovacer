@@ -15,6 +15,7 @@ use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -184,6 +185,21 @@ class CashSessionService
         );
 
         return $parts;
+    }
+
+    /**
+     * Everything a cash count (corte) shows: the expected cash and its parts, the
+     * sales by payment method and the cash that came in and out by hand.
+     *
+     * @return array{breakdown: array<string, string>, sales: array{cash: string, card: string, transfer: string, credit: string, sold: string, sales_count: int}, movements: Collection<int, CashMovement>}
+     */
+    public function report(CashSession $session): array
+    {
+        return [
+            'breakdown' => $this->cashBreakdown($session),
+            'sales' => $this->salesSummary($session),
+            'movements' => $session->cashMovements()->with(['user', 'supplier'])->orderBy('occurred_at')->get(),
+        ];
     }
 
     /**

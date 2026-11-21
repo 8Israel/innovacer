@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CashSessionReportController;
 use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\InvoiceDownloadController;
 use App\Http\Controllers\ProductLabelController;
@@ -21,6 +22,9 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
         Route::get('ventas/{sale}/nota', [SaleDocumentController::class, 'note'])->name('sales.note');
     });
     Route::livewire('caja', 'pages::cash.index')->name('cash.index');
+    Route::livewire('caja/cortes', 'pages::cash.history')->name('cash.history');
+    Route::livewire('caja/cortes/{cashSession}', 'pages::cash.show')->name('cash.show');
+    Route::get('caja/cortes/{cashSession}/imprimir', CashSessionReportController::class)->name('cash.print');
 
     Route::middleware('permission:manage_inventory')->group(function () {
         Route::livewire('inventario', 'pages::inventory.index')->name('inventory.index');
