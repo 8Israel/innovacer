@@ -27,6 +27,7 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
         Route::livewire('inventario/traspaso', 'pages::inventory.transfer')->name('inventory.transfer');
         Route::livewire('inventario/prestamos', 'pages::inventory.loans')->name('inventory.loans');
         Route::livewire('inventario/conteo', 'pages::inventory.count')->name('inventory.count');
+        Route::livewire('inventario/importar', 'pages::inventory.import')->name('inventory.import');
         Route::livewire('inventario/productos/{product}/kardex', 'pages::inventory.kardex')->name('inventory.kardex');
     });
 

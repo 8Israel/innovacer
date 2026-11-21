@@ -92,6 +92,26 @@ class Product extends Model
     }
 
     /**
+     * An internal EAN-13 barcode (prefix 200, reserved for in-store use) that no
+     * other product has.
+     */
+    public static function newInternalBarcode(): string
+    {
+        do {
+            $digits = '200'.str_pad((string) random_int(0, 999_999_999), 9, '0', STR_PAD_LEFT);
+            $sum = 0;
+
+            foreach (str_split($digits) as $position => $digit) {
+                $sum += (int) $digit * ($position % 2 === 0 ? 1 : 3);
+            }
+
+            $code = $digits.((10 - $sum % 10) % 10);
+        } while (self::query()->where('barcode', $code)->exists());
+
+        return $code;
+    }
+
+    /**
      * Products that already have a price and can therefore be invoiced.
      */
     #[Scope]

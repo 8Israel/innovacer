@@ -147,24 +147,9 @@ new #[Title('Productos')] class extends Component
         return Warehouse::query()->where('is_active', true)->orderByDesc('is_sellable')->orderBy('id')->get(['id', 'name']);
     }
 
-    /**
-     * An internal EAN-13 barcode (prefix 200, reserved for in-store use) that no
-     * other product has.
-     */
     public function generateBarcode(): void
     {
-        do {
-            $digits = '200'.str_pad((string) random_int(0, 999_999_999), 9, '0', STR_PAD_LEFT);
-            $sum = 0;
-
-            foreach (str_split($digits) as $position => $digit) {
-                $sum += (int) $digit * ($position % 2 === 0 ? 1 : 3);
-            }
-
-            $code = $digits.((10 - $sum % 10) % 10);
-        } while (Product::query()->where('barcode', $code)->exists());
-
-        $this->barcode = $code;
+        $this->barcode = Product::newInternalBarcode();
         $this->barcodeAvailable = true;
     }
 

@@ -90,6 +90,49 @@ class InventoryService
     }
 
     /**
+     * Stock that was already there when the system started (product import): one
+     * entry operation where each item becomes a lot with its own supplier, owned by
+     * that supplier when it is on consignment. Costs may be unknown. In a lender's
+     * warehouse everything is the lender's.
+     *
+     * @param  list<array{product_id: int, quantity: string, unit_cost: string|null, supplier_id: int|null, consignment: bool}>  $items
+     */
+    public function openingStock(User $user, Warehouse $warehouse, array $items, string $reference): InventoryOperation
+    {
+        return DB::transaction(function () use ($user, $warehouse, $items, $reference): InventoryOperation {
+            $operation = InventoryOperation::create([
+                'type' => InventoryOperationType::Entry,
+                'user_id' => $user->id,
+                'reference' => $reference,
+                'note' => __('Inventario inicial'),
+                'occurred_at' => now(),
+            ]);
+
+            $products = Product::query()->whereIn('id', array_column($items, 'product_id'))->get()->keyBy('id');
+
+            foreach ($items as $item) {
+                $product = $products[$item['product_id']];
+                $quantity = $this->quantity((string) $item['quantity'], 'quantity');
+                $supplierId = $warehouse->isLoanWarehouse() ? $warehouse->lender_id : $item['supplier_id'];
+
+                $lot = Lot::create([
+                    'product_id' => $product->id,
+                    'supplier_id' => $supplierId,
+                    'owner_supplier_id' => $item['consignment'] && ! $warehouse->isLoanWarehouse() ? $supplierId : null,
+                    'inventory_operation_id' => $operation->id,
+                    'unit_cost' => $item['unit_cost'] ?? $product->reference_cost,
+                    'quantity_received' => $quantity,
+                    'received_at' => $operation->occurred_at,
+                ]);
+
+                $this->putIntoLots($operation, $product, $warehouse, [['lot_id' => $lot->id, 'quantity' => $quantity]]);
+            }
+
+            return $operation;
+        });
+    }
+
+    /**
      * Move product between warehouses in one operation. The same lots move (FIFO),
      * keeping their owner. Taking from a lender's warehouse records a loan.
      *
