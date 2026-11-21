@@ -15,7 +15,9 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $customer_id
  * @property InvoiceStatus $status
+ * @property InvoiceType $type
  * @property string|null $facturapi_id
+ * @property string|null $uuid Folio fiscal assigned by the SAT when stamped.
  * @property string|null $series
  * @property string|null $folio
  * @property string $payment_form
@@ -30,6 +32,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $error_message
  * @property Carbon|null $stamped_at
  * @property Carbon|null $canceled_at
+ * @property string|null $cancellation_reason SAT cancellation motive, 01 to 04.
+ * @property string|null $substitution_uuid Folio fiscal of the invoice that replaces it (motive 01).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -43,6 +47,7 @@ class Invoice extends Model
     {
         return [
             'status' => InvoiceStatus::class,
+            'type' => InvoiceType::class,
             'subtotal' => 'decimal:2',
             'tax_total' => 'decimal:2',
             'total' => 'decimal:2',
@@ -67,5 +72,26 @@ class Invoice extends Model
     public function items(): HasMany
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    /**
+     * Installments paid on this PPD invoice, each covered by a payment complement.
+     */
+    public function paidInstallments(): HasMany
+    {
+        return $this->hasMany(InvoicePayment::class, 'related_invoice_id');
+    }
+
+    /**
+     * What this payment complement covers.
+     */
+    public function complementPayments(): HasMany
+    {
+        return $this->hasMany(InvoicePayment::class);
+    }
+
+    public function isPaidInInstallments(): bool
+    {
+        return $this->type === InvoiceType::Income && $this->payment_method === 'PPD';
     }
 }

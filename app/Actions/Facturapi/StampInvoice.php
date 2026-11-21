@@ -64,6 +64,7 @@ class StampInvoice
             ]);
 
             $invoice->facturapi_id = $response['id'];
+            $invoice->uuid = $response['uuid'] ?? null;
             $invoice->status = InvoiceStatus::Stamped;
             $invoice->series = $response['series'] ?? null;
             $invoice->folio = isset($response['folio_number']) ? (string) $response['folio_number'] : null;

@@ -35,7 +35,7 @@ test('a stamped invoice can be canceled', function () {
     $invoice = Invoice::factory()->stamped()->for(Customer::factory())->create();
 
     $this->mock(FacturapiGateway::class, function ($mock) use ($invoice) {
-        $mock->shouldReceive('cancelInvoice')->once()->with($invoice->facturapi_id, '02')->andReturn(['status' => 'canceled']);
+        $mock->shouldReceive('cancelInvoice')->once()->with($invoice->facturapi_id, '02', null)->andReturn(['status' => 'canceled']);
     });
 
     Livewire::test('pages::invoices.index')

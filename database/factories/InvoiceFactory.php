@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceStatus;
+use App\Models\InvoiceType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class InvoiceFactory extends Factory
         return [
             'customer_id' => Customer::factory(),
             'status' => InvoiceStatus::Draft,
+            'type' => InvoiceType::Income,
             'payment_form' => '01',
             'payment_method' => 'PUE',
             'cfdi_use' => 'G03',
@@ -34,6 +36,7 @@ class InvoiceFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => InvoiceStatus::Stamped,
             'facturapi_id' => fake()->uuid(),
+            'uuid' => fake()->uuid(),
             'stamped_at' => now(),
         ]);
     }

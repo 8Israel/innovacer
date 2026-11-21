@@ -1,6 +1,6 @@
 # Base de datos — Sistema de Inventario y Punto de Venta
 
-Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
+Desglose de las 40 tablas de la base de datos `innovacer`: para qué sirve cada tabla, qué guarda cada campo, su traducción al español, el tipo de dato y sus reglas. Generado a partir de la estructura real de la base de datos el 13/10/2026 y actualizado a mano con cada tarea.
 
 ## Cómo leer este documento
 
@@ -39,7 +39,7 @@ Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada 
 - **Cobranza:** [`customer_payments`](#customer_payments), [`customer_payment_allocations`](#customer_payment_allocations)
 - **Caja:** [`cash_movements`](#cash_movements), [`cash_sessions`](#cash_sessions)
 - **Proveedores:** [`supplier_payments`](#supplier_payments), [`supplier_payment_allocations`](#supplier_payment_allocations)
-- **Facturación:** [`invoices`](#invoices), [`invoice_items`](#invoice_items), [`invoice_sale`](#invoice_sale)
+- **Facturación:** [`invoices`](#invoices), [`invoice_items`](#invoice_items), [`invoice_sale`](#invoice_sale), [`invoice_payments`](#invoice_payments)
 - **Configuración:** [`settings`](#settings)
 - **Tablas internas de Laravel:** [`migrations`](#migrations), [`cache`](#cache), [`cache_locks`](#cache_locks), [`jobs`](#jobs), [`job_batches`](#job_batches), [`failed_jobs`](#failed_jobs)
 
@@ -655,7 +655,9 @@ Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
 | `customer_id` | Cliente | `bigint unsigned` | No | — | Relación → `customers.id` (al borrar: restringir) | Cliente al que se factura. |
 | `status` | Estado | `varchar(255)` | No | `draft` | — | Valores: `draft` (borrador), `stamped` (timbrada), `canceled` (cancelada), `failed` (falló el timbrado). |
+| `type` | Tipo | `varchar(255)` | No | `income` | — | Valores: `income` (factura de ingreso, CFDI tipo I), `payment` (complemento de pago, CFDI tipo P). |
 | `facturapi_id` | ID en Facturapi | `varchar(255)` | Sí | — | Único | Identificador de la factura en Facturapi. |
+| `uuid` | Folio fiscal | `varchar(36)` | Sí | — | Único | UUID que asigna el SAT al timbrar. |
 | `series` | Serie | `varchar(255)` | Sí | — | — | Serie de la factura. |
 | `folio` | Folio | `varchar(255)` | Sí | — | — | Folio de la factura. |
 | `payment_form` | Forma de pago SAT | `varchar(2)` | No | — | — | Clave SAT de forma de pago (01 efectivo, 03 transferencia, 04 tarjeta…). |
@@ -670,6 +672,8 @@ Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `error_message` | Mensaje de error | `text` | Sí | — | — | Por qué falló el timbrado, si falló. |
 | `stamped_at` | Timbrada el | `timestamp` | Sí | — | — | Cuándo se timbró. |
 | `canceled_at` | Cancelada el | `timestamp` | Sí | — | — | Cuándo se canceló. |
+| `cancellation_reason` | Motivo de cancelación | `varchar(2)` | Sí | — | — | Motivo SAT: `01` con errores con relación (se sustituye), `02` con errores sin relación, `03` no se llevó a cabo la operación, `04` operación nominativa en factura global. |
+| `substitution_uuid` | Folio que la sustituye | `varchar(36)` | Sí | — | — | Folio fiscal de la factura que la reemplaza; obligatorio con el motivo `01`. |
 | `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
 | `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
 
@@ -710,6 +714,27 @@ Desglose de las 39 tablas de la base de datos `innovacer`: para qué sirve cada 
 - `invoice_id` + `sale_id` — Único (no se puede repetir la combinación)
 
 ---
+
+### invoice_payments
+
+**Parcialidades pagadas (complementos de pago).** Cada abono aplicado a una factura en parcialidades (PPD) se ampara con un complemento de pago (Tarea 11). Lo que el abono pagó de la factura es la parte que se aplicó a las ventas que esa factura incluye. Una factura PPD muestra "Falta complemento" mientras tenga abonos sin renglón aquí (o con su complemento cancelado).
+
+| Campo | Traducción | Tipo | Nulo | Por defecto | Reglas | Descripción |
+|---|---|---|---|---|---|---|
+| `id` | ID | `bigint unsigned` | No | Autoincremental | Llave primaria | Identificador único del registro, se genera automáticamente. |
+| `invoice_id` | Complemento | `bigint unsigned` | No | — | Relación → `invoices.id` (al borrar: restringir) | El CFDI de tipo pago. |
+| `related_invoice_id` | Factura pagada | `bigint unsigned` | No | — | Relación → `invoices.id` (al borrar: restringir) | La factura PPD que se paga. |
+| `customer_payment_id` | Abono | `bigint unsigned` | No | — | Relación → `customer_payments.id` (al borrar: restringir) | Abono que ampara. |
+| `installment` | Parcialidad | `smallint unsigned` | No | — | — | Número de parcialidad, consecutivo por factura desde 1. |
+| `previous_balance` | Saldo anterior | `decimal(12,2)` | No | — | — | Lo que se debía de la factura antes de este pago. |
+| `amount_paid` | Pagado | `decimal(12,2)` | No | — | — | Lo que pagó este abono de la factura. |
+| `outstanding_balance` | Saldo pendiente | `decimal(12,2)` | No | — | — | `previous_balance − amount_paid`. |
+| `created_at` | Creado el | `timestamp` | Sí | — | — | Fecha y hora en que se creó el registro. |
+| `updated_at` | Actualizado el | `timestamp` | Sí | — | — | Fecha y hora de la última modificación del registro. |
+
+**Índices combinados:**
+
+- `related_invoice_id` + `installment` — Índice para numerar las parcialidades
 
 ## Configuración
 

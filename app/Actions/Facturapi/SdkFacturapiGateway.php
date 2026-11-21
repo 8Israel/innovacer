@@ -18,9 +18,9 @@ class SdkFacturapiGateway implements FacturapiGateway
         return $this->toArray($this->client->Invoices->create($data));
     }
 
-    public function cancelInvoice(string $facturapiId, string $motive): array
+    public function cancelInvoice(string $facturapiId, string $motive, ?string $substitution = null): array
     {
-        return $this->toArray($this->client->Invoices->cancel($facturapiId, ['motive' => $motive]));
+        return $this->toArray($this->client->Invoices->cancel($facturapiId, array_filter(['motive' => $motive, 'substitution' => $substitution])));
     }
 
     public function downloadPdf(string $facturapiId): string

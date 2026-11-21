@@ -17,9 +17,10 @@ interface FacturapiGateway
     public function createInvoice(array $data): array;
 
     /**
+     * @param  string|null  $substitution  folio fiscal of the replacing invoice, required for motive 01.
      * @return array<string, mixed>
      */
-    public function cancelInvoice(string $facturapiId, string $motive): array;
+    public function cancelInvoice(string $facturapiId, string $motive, ?string $substitution = null): array;
 
     public function downloadPdf(string $facturapiId): string;
 
