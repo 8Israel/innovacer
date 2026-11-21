@@ -252,6 +252,11 @@ new #[Title('Venta')] class extends Component {
             <div class="flex flex-wrap gap-2">
                 <flux:button size="sm" icon="printer" :href="route('sales.ticket', $sale)" target="_blank">{{ __('Reimprimir ticket') }}</flux:button>
                 <flux:button size="sm" icon="document-text" :href="route('sales.note', $sale)" target="_blank">{{ __('Nota de venta') }}</flux:button>
+                @can(\App\Models\Permission::Invoice->value)
+                    @if ($sale->customer_id && ! $sale->isCanceled() && ! $this->isInvoiced)
+                        <flux:button size="sm" icon="document-text" :href="route('invoices.from-sales', ['venta' => $sale->id])" wire:navigate>{{ __('Facturar') }}</flux:button>
+                    @endif
+                @endcan
                 @can(\App\Models\Permission::CancelSales->value)
                     @unless ($sale->isCanceled())
                         <flux:modal.trigger name="cancel-sale">

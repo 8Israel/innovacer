@@ -133,7 +133,7 @@ new #[Title('Facturas')] class extends Component
             <flux:subheading>{{ __('Facturas emitidas a través de Facturapi.') }}</flux:subheading>
         </div>
 
-        <flux:button variant="primary" icon="plus" :href="route('invoices.create')" wire:navigate>
+        <flux:button variant="primary" icon="plus" :href="route('invoices.from-sales')" wire:navigate>
             {{ __('Nueva factura') }}
         </flux:button>
     </div>

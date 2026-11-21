@@ -689,7 +689,8 @@ Desglose de las 40 tablas de la base de datos `innovacer`: para qué sirve cada 
 | `quantity` | Cantidad | `decimal(12,3)` | No | — | — | Cantidad facturada. |
 | `unit_price` | Precio unitario | `decimal(12,2)` | No | — | — | Precio por unidad sin impuestos. |
 | `tax_rate` | Tasa de IVA | `decimal(5,4)` | No | — | — | IVA aplicado, como fracción. |
-| `subtotal` | Subtotal | `decimal(12,2)` | No | — | — | Importe antes de impuestos. |
+| `subtotal` | Subtotal | `decimal(12,2)` | No | — | — | Cantidad × precio unitario, antes de descuento e impuestos. |
+| `discount` | Descuento | `decimal(12,2)` | No | `0.00` | — | Descuento del concepto (el del cliente y el de la venta), como lo pide el CFDI. |
 | `tax_amount` | IVA | `decimal(12,2)` | No | — | — | Monto de IVA. |
 | `ieps_rate` | Tasa de IEPS | `decimal(5,4)` | No | `0.0000` | — | IEPS aplicado, como fracción. |
 | `ieps_amount` | IEPS | `decimal(12,2)` | No | `0.00` | — | Monto de IEPS. |

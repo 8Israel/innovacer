@@ -16,7 +16,8 @@ use Illuminate\Support\Carbon;
  * @property string $quantity
  * @property string $unit_price
  * @property string $tax_rate
- * @property string $subtotal
+ * @property string $subtotal Quantity × unit price, before the discount.
+ * @property string $discount
  * @property string $tax_amount
  * @property string $ieps_rate
  * @property string $ieps_amount
@@ -24,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['invoice_id', 'product_id', 'quantity', 'unit_price', 'tax_rate', 'subtotal', 'tax_amount', 'ieps_rate', 'ieps_amount', 'total'])]
+#[Fillable(['invoice_id', 'product_id', 'quantity', 'unit_price', 'tax_rate', 'subtotal', 'discount', 'tax_amount', 'ieps_rate', 'ieps_amount', 'total'])]
 class InvoiceItem extends Model
 {
     /** @use HasFactory<InvoiceItemFactory> */
@@ -37,6 +38,7 @@ class InvoiceItem extends Model
             'unit_price' => 'decimal:2',
             'tax_rate' => 'decimal:4',
             'subtotal' => 'decimal:2',
+            'discount' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'ieps_rate' => 'decimal:4',
             'ieps_amount' => 'decimal:2',

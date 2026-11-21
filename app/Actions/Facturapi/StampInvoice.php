@@ -45,8 +45,9 @@ class StampInvoice
 
             $response = $this->gateway->createInvoice([
                 'customer' => $facturapiCustomerId,
-                'items' => $invoice->items->map(fn (InvoiceItem $item): array => [
+                'items' => $invoice->items->map(fn (InvoiceItem $item): array => array_filter([
                     'quantity' => (float) $item->quantity,
+                    'discount' => (float) $item->discount > 0 ? (float) $item->discount : null,
                     'product' => [
                         'description' => $item->product->name,
                         'product_key' => $item->product->product_key,
@@ -54,9 +55,12 @@ class StampInvoice
                         'unit_key' => $item->product->unit_key,
                         'unit_name' => $item->product->unit_name,
                         'tax_included' => false,
-                        'taxes' => [['type' => 'IVA', 'rate' => (float) $item->tax_rate]],
+                        'taxes' => array_values(array_filter([
+                            ['type' => 'IVA', 'rate' => (float) $item->tax_rate],
+                            (float) $item->ieps_rate > 0 ? ['type' => 'IEPS', 'rate' => (float) $item->ieps_rate] : null,
+                        ])),
                     ],
-                ])->values()->all(),
+                ], fn ($value) => $value !== null))->values()->all(),
                 'payment_form' => $invoice->payment_form,
                 'payment_method' => $invoice->payment_method,
                 'use' => $invoice->cfdi_use,

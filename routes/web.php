@@ -46,6 +46,7 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::livewire('configuracion', 'pages::configuration.index')->middleware('permission:manage_settings')->name('configuration.index');
 
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
+    Route::livewire('facturas/nueva', 'pages::invoices.from-sales')->middleware('permission:invoice')->name('invoices.from-sales');
     Route::livewire('invoices/create', 'pages::invoices.create')->name('invoices.create');
     Route::get('invoices/{invoice}/pdf', [InvoiceDownloadController::class, 'pdf'])->name('invoices.pdf');
     Route::get('invoices/{invoice}/xml', [InvoiceDownloadController::class, 'xml'])->name('invoices.xml');
