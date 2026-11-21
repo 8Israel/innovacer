@@ -39,6 +39,8 @@ Route::middleware(['auth', 'account.secure'])->group(function () {
     Route::livewire('proveedores', 'pages::suppliers.index')->name('suppliers.index');
     Route::livewire('proveedores/{supplier}', 'pages::suppliers.show')->name('suppliers.show');
 
+    Route::livewire('reportes', 'pages::reports.index')->middleware('permission:view_reports')->name('reports.index');
+
     Route::livewire('configuracion', 'pages::configuration.index')->middleware('permission:manage_settings')->name('configuration.index');
 
     Route::livewire('invoices', 'pages::invoices.index')->name('invoices.index');
