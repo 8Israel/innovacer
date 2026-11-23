@@ -131,13 +131,14 @@ class CustomerBalanceService
                 continue;
             }
 
-            $entries->push(['date' => $sale->sold_at, 'order' => 0, 'concept' => __('Venta :folio', ['folio' => $sale->folio]), 'account' => $account, 'charge' => $row['on_credit'], 'payment' => '0.00']);
+            $entries->push(['date' => $sale->sold_at, 'order' => 0, 'sequence' => $sale->id, 'concept' => __('Venta :folio', ['folio' => $sale->folio]), 'account' => $account, 'charge' => $row['on_credit'], 'payment' => '0.00']);
 
             foreach ($sale->paymentAllocations->groupBy('customer_payment_id') as $allocations) {
                 $payment = $allocations->first()->customerPayment;
                 $entries->push([
                     'date' => $payment->paid_at,
                     'order' => 1,
+                    'sequence' => $allocations->min('id'),
                     'concept' => collect([
                         __('Abono · :method', ['method' => mb_strtolower($payment->method->label())]),
                         __('aplicado a :folio', ['folio' => $sale->folio]),
@@ -150,14 +151,14 @@ class CustomerBalanceService
             }
 
             foreach ($sale->customerReturns->where('refund_method', RefundMethod::AccountCredit) as $return) {
-                $entries->push(['date' => $return->returned_at, 'order' => 1, 'concept' => __('Devolución :folio', ['folio' => $return->folio]), 'account' => $account, 'charge' => '0.00', 'payment' => $return->refund_amount]);
+                $entries->push(['date' => $return->returned_at, 'order' => 1, 'sequence' => $return->id, 'concept' => __('Devolución :folio', ['folio' => $return->folio]), 'account' => $account, 'charge' => '0.00', 'payment' => $return->refund_amount]);
             }
         }
 
         $balances = [];
 
         return $entries
-            ->sortBy([['date', 'asc'], ['order', 'asc']])
+            ->sortBy([['date', 'asc'], ['order', 'asc'], ['sequence', 'asc']])
             ->values()
             ->map(function (array $entry) use (&$balances): array {
                 $key = $entry['account']?->id ?? 0;

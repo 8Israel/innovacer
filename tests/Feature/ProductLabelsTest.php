@@ -65,3 +65,19 @@ test('it generates internal codes for the chosen products that have none', funct
     expect($hose->fresh()->barcode)->toStartWith('200');
     expect($withCode->fresh()->barcode)->toBe('7501000000018');
 });
+
+test('printing labels from the product form saves a new code first so the label carries it', function () {
+    $product = Product::factory()->create(['barcode' => null]);
+
+    $component = Livewire::actingAs(User::factory()->create())
+        ->test('pages::products.form', ['product' => $product])
+        ->assertSee('Imprimir etiquetas')
+        ->call('generateBarcode')
+        ->assertSee('Guardar e imprimir')
+        ->set('label_copies', 4)
+        ->call('saveAndPrintLabels');
+
+    $code = $product->fresh()->barcode;
+    expect($code)->toStartWith('200');
+    $component->assertRedirect(route('products.labels', ['p' => [$product->id => 4]]));
+});

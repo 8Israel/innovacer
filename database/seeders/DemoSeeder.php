@@ -21,8 +21,9 @@ use Illuminate\Support\Facades\DB;
  *
  *     php artisan migrate:fresh && php artisan db:seed --class=DemoSeeder
  *
- * Users "dueno@innovacer.test" and "encargada@innovacer.test" get the temporary
- * password below and must change it and set up two-step verification on first login.
+ * When the database already has users they are kept and used; otherwise users
+ * "dueno@innovacer.test" and "encargada@innovacer.test" are created with the
+ * temporary password below and must change it on first login.
  * Taxes and SAT keys are left pending until the accountant confirms them.
  */
 class DemoSeeder extends Seeder
@@ -46,8 +47,18 @@ class DemoSeeder extends Seeder
         });
     }
 
+    /**
+     * The user the demo stock is recorded under: an existing owner, any existing user,
+     * or the demo owner created here when the database has no users yet.
+     */
     private function users(): User
     {
+        $existing = User::query()->orderByRaw('role = ? desc', [UserRole::Owner->value])->orderBy('id')->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
         $owner = User::query()->forceCreate([
             'name' => 'Dueño',
             'email' => 'dueno@innovacer.test',
@@ -106,15 +117,16 @@ class DemoSeeder extends Seeder
         $materiales = Category::create(['name' => 'Materiales']);
 
         $catalog = [
-            // code => [name, brand, presentation, unit, category, reference cost, public price, wholesale price]
-            'UNI-20' => ['Ultra Nitrógeno 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 980, 1250, 1180],
-            'UCA-20' => ['Ultra Calcio 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 1050, 1350, 1280],
-            'UMG-20' => ['Ultra Magnesio 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 1150, 1480, 1400],
-            'COR-20' => ['Core 20 L', 'Ortitec', '20 L', 'garrafa', $fertilizantes, 1600, 2100, 2000],
-            'BGF-01' => ['Bigfix 1 L', 'Ortitec', '1 L', 'botella', $coadyuvantes, 380, 520, 490],
-            'CAL-01' => ['Calcio 1 L', 'Coda', '1 L', 'botella', $fertilizantes, 120, 185, 170],
-            'MRB-01' => ['Mirabis 1 L', 'NH', '1 L', 'botella', $coadyuvantes, 210, 290, 270],
-            'MAN-16' => ['Manguera de riego 16 mm', 'TN', '16 mm', 'metro', $materiales, 15, null, null],
+            // code => [name, brand, presentation, unit, category, reference cost, public price, wholesale price, IVA, IEPS, SAT product key, SAT unit key]
+            // Fertilizers go at IVA 0 %; the rest at 16 % (to confirm with the accountant). Bigfix carries IEPS to try it out.
+            'UNI-20' => ['Ultra Nitrógeno 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 980, 1250, 1180, 0, null, '10171500', 'H87'],
+            'UCA-20' => ['Ultra Calcio 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 1050, 1350, 1280, 0, null, '10171500', 'H87'],
+            'UMG-20' => ['Ultra Magnesio 20 L', 'Biotexa', '20 L', 'garrafa', $fertilizantes, 1150, 1480, 1400, 0, null, '10171500', 'H87'],
+            'COR-20' => ['Core 20 L', 'Ortitec', '20 L', 'garrafa', $fertilizantes, 1600, 2100, 2000, 0, null, '10171500', 'H87'],
+            'BGF-01' => ['Bigfix 1 L', 'Ortitec', '1 L', 'botella', $coadyuvantes, 380, 520, 490, 0.16, 0.06, '10191509', 'H87'],
+            'CAL-01' => ['Calcio 1 L', 'Coda', '1 L', 'botella', $fertilizantes, 120, 185, 170, 0, null, '10171500', 'H87'],
+            'MRB-01' => ['Mirabis 1 L', 'NH', '1 L', 'botella', $coadyuvantes, 210, 290, 270, 0.16, null, null, null],
+            'MAN-16' => ['Manguera de riego 16 mm', 'TN', '16 mm', 'metro', $materiales, 15, null, null, 0.16, null, '40142000', 'MTR'],
         ];
 
         return collect($catalog)->map(fn (array $data, string $code) => Product::create([
@@ -127,7 +139,12 @@ class DemoSeeder extends Seeder
             'reference_cost' => $data[5],
             'unit_price' => $data[6],
             'wholesale_price' => $data[7],
-            'tax_rate' => 0,
+            'wholesale_min_quantity' => $data[7] === null ? null : 10,
+            'tax_rate' => $data[8],
+            'ieps_rate' => $data[9],
+            'product_key' => $data[10],
+            'unit_key' => $data[11],
+            'unit_name' => $data[11] === null ? null : ($data[11] === 'MTR' ? 'Metro' : 'Pieza'),
         ]))->all();
     }
 
@@ -184,7 +201,16 @@ class DemoSeeder extends Seeder
         ]);
         $castanon->destinations()->createMany([['name' => 'Reynosa'], ['name' => 'Jalincher']]);
 
-        Customer::create(['name' => 'Ernesto Castaño', 'credit_enabled' => true, 'credit_limit' => 50000]);
+        Customer::create([
+            'name' => 'Ernesto Castaño',
+            'credit_enabled' => true,
+            'credit_limit' => 50000,
+            'rfc' => 'CAGE850312QK4',
+            'tax_system' => '612',
+            'zip_code' => '27000',
+            'cfdi_use' => 'G01',
+            'email' => 'ernesto@example.com',
+        ]);
         Customer::create(['name' => 'Ing. Meléndez', 'credit_enabled' => true]);
         Customer::create(['name' => 'Alejandro Carrasco']);
     }

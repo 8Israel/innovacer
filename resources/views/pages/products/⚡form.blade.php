@@ -226,6 +226,25 @@ new #[Title('Producto')] class extends Component {
     }
 
     /**
+     * Labels print what is saved, so a code just generated or typed is saved first.
+     */
+    public function saveAndPrintLabels(): void
+    {
+        $product = $this->persist();
+
+        $this->redirectRoute('products.labels', ['p' => [$product->id => max(1, min(500, $this->label_copies))]]);
+    }
+
+    /**
+     * Whether the barcode on screen is the one saved (and so the one labels would print).
+     */
+    #[Computed]
+    public function barcodeIsSaved(): bool
+    {
+        return $this->product !== null && trim($this->barcode) === (string) $this->product->barcode;
+    }
+
+    /**
      * Save the new product and leave the form empty, ready for the next one.
      */
     public function saveAndAddAnother(): void
@@ -540,14 +559,17 @@ new #[Title('Producto')] class extends Component {
                         @endif
                     </div>
                 </div>
-                @if ($product)
-                    <div class="flex items-end gap-2">
-                        <div class="w-24"><flux:input wire:model.live="label_copies" type="number" min="1" max="500" :label="__('Cantidad')" /></div>
-                        <flux:button icon="printer" :href="route('products.labels', ['p' => [$product->id => max(1, (int) $label_copies)]])" target="_blank">{{ __('Imprimir etiquetas') }}</flux:button>
-                    </div>
-                @else
-                    <flux:text size="sm">{{ __('Guarda el producto para imprimir sus etiquetas.') }}</flux:text>
-                @endif
+                <div class="flex items-end gap-2">
+                    <div class="w-24"><flux:input wire:model.live="label_copies" type="number" min="1" max="500" :label="__('Cantidad')" /></div>
+                    @if ($this->barcodeIsSaved)
+                        <flux:button icon="printer" :href="route('products.labels', ['p' => [$product->id => max(1, (int) $label_copies)]])" target="_blank" data-test="print-labels-button">{{ __('Imprimir etiquetas') }}</flux:button>
+                    @else
+                        <flux:button type="button" icon="printer" wire:click="saveAndPrintLabels" data-test="save-and-print-labels-button">{{ __('Guardar e imprimir') }}</flux:button>
+                    @endif
+                </div>
+                @unless ($this->barcodeIsSaved)
+                    <flux:text size="sm">{{ __('La etiqueta usa el código guardado: se guarda el producto antes de imprimir.') }}</flux:text>
+                @endunless
             </flux:card>
 
             <flux:card class="flex flex-col gap-2">

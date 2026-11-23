@@ -1,11 +1,19 @@
 <?php
 
+use App\Models\CashSession;
+use App\Models\CashSessionStatus;
 use App\Models\Customer;
+use App\Models\CustomerReturn;
 use App\Models\InventoryMovement;
+use App\Models\InventoryOperation;
 use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleStatus;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
+use App\Services\CustomerBalanceService;
+use Database\Seeders\DemoActivitySeeder;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -46,4 +54,27 @@ test('it does nothing when the demo data is already loaded', function () {
 
     expect(Warehouse::count())->toBe(3);
     expect(User::count())->toBe(2);
+});
+
+test('it keeps the existing users instead of creating the demo ones', function () {
+    $existing = User::factory()->create(['email' => 'israel@example.com']);
+
+    $this->seed(DemoSeeder::class);
+
+    expect(User::query()->pluck('email')->all())->toBe(['israel@example.com']);
+    expect(InventoryOperation::query()->pluck('user_id')->unique()->all())->toBe([$existing->id]);
+});
+
+test('the activity seeder leaves ten days of activity with today\'s register open', function () {
+    $this->seed(DemoSeeder::class);
+    $this->seed(DemoActivitySeeder::class);
+
+    $sessions = CashSession::query()->orderBy('opened_at')->get();
+    expect($sessions)->toHaveCount(10);
+    expect($sessions->last()->isOpen())->toBeTrue();
+    expect($sessions->last()->opened_at->isToday())->toBeTrue();
+    expect($sessions->where('status', CashSessionStatus::Closed)->pluck('cash_difference')->map(fn ($d) => (string) $d)->filter(fn ($d) => $d !== '0.00')->values()->all())->toBe(['-100.00', '20.00']);
+    expect(Sale::query()->where('status', SaleStatus::Pending)->count())->toBe(1);
+    expect(CustomerReturn::count())->toBe(3);
+    expect(app(CustomerBalanceService::class)->balance(Customer::query()->where('name', 'Francisco Castañón')->sole()))->toBe('12323.00');
 });
