@@ -120,18 +120,33 @@ new #[Title('Conteo físico')] class extends Component {
 
     /**
      * Each typed quantity is saved right away, so the count can be continued later.
+     * The browser usually sends one product; at times (a product just added to the
+     * list) it sends the whole list, and then every quantity is saved.
      */
-    public function updatedCounted(mixed $value, string $productId): void
+    public function updatedCounted(mixed $value, ?string $productId = null): void
     {
-        $value = trim((string) $value);
+        $quantities = $productId === null ? (array) $value : [$productId => $value];
+        $counts = app(PhysicalCountService::class);
+        $products = Product::query()->findMany(array_map('intval', array_keys($quantities)))->keyBy('id');
 
-        app(PhysicalCountService::class)->record($this->count, Product::query()->findOrFail((int) $productId), $value === '' ? null : $value);
+        foreach ($quantities as $id => $quantity) {
+            $product = $products->get((int) $id);
+
+            if ($product === null) {
+                continue;
+            }
+
+            $quantity = trim((string) $quantity);
+            $counts->record($this->count, $product, $quantity === '' ? null : $quantity);
+        }
+
         unset($this->rows, $this->differences);
     }
 
     public function addProduct(int $productId): void
     {
         app(PhysicalCountService::class)->record($this->count, Product::query()->findOrFail($productId), null);
+        $this->counted[$productId] = '';
         $this->search = '';
         unset($this->rows, $this->differences, $this->extraProducts);
     }

@@ -73,5 +73,21 @@ test('a product found on the shelf can be added to the count', function () {
         ->call('start')
         ->set('search', 'Mangu')
         ->call('addProduct', $hose->id)
-        ->assertSee('0 de 4 productos contados');
+        ->assertSet("counted.{$hose->id}", '')
+        ->assertSee('0 de 4 productos contados')
+        ->set("counted.{$hose->id}", '3')
+        ->assertSee('1 de 4 productos contados');
+});
+
+test('it saves the quantities when the browser sends the whole list at once', function () {
+    ['nitrogeno' => $nitrogeno, 'bigfix' => $bigfix, 'mirabis' => $mirabis] = countPageWarehouse();
+
+    Livewire::actingAs(User::factory()->create())
+        ->test('pages::inventory.count')
+        ->call('start')
+        ->set('counted', [$nitrogeno->id => '12', $bigfix->id => '14', $mirabis->id => ''])
+        ->assertHasNoErrors()
+        ->assertSee('2 de 3 productos contados');
+
+    expect(PhysicalCount::query()->sole()->items()->whereNotNull('counted_quantity')->count())->toBe(2);
 });
