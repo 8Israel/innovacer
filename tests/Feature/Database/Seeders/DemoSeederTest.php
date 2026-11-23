@@ -6,13 +6,17 @@ use App\Models\Customer;
 use App\Models\CustomerReturn;
 use App\Models\InventoryMovement;
 use App\Models\InventoryOperation;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleStatus;
+use App\Models\Supplier;
+use App\Models\SupplierPayment;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
 use App\Services\CustomerBalanceService;
+use App\Services\SupplierDebtService;
 use Database\Seeders\DemoActivitySeeder;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Support\Facades\Hash;
@@ -77,4 +81,32 @@ test('the activity seeder leaves ten days of activity with today\'s register ope
     expect(Sale::query()->where('status', SaleStatus::Pending)->count())->toBe(1);
     expect(CustomerReturn::count())->toBe(3);
     expect(app(CustomerBalanceService::class)->balance(Customer::query()->where('name', 'Francisco Castañón')->sole()))->toBe('12323.00');
+});
+
+test('the activity seeder records the owner\'s actions without touching their password', function () {
+    $this->seed(DemoSeeder::class);
+    $owner = User::query()->where('role', UserRole::Owner)->sole();
+    $passwordHash = $owner->password;
+
+    $this->seed(DemoActivitySeeder::class);
+
+    expect(Sale::query()->where('status', SaleStatus::Canceled)->pluck('canceled_by_id')->all())->toBe([$owner->id]);
+    expect(Sale::query()->where('discount_rate', '>', 0)->pluck('authorized_by_id')->all())->toBe([$owner->id]);
+    expect(SupplierPayment::query()->with('supplier')->get()->map(fn (SupplierPayment $payment) => [$payment->supplier->name, $payment->method, (string) $payment->amount])->all())->toBe([
+        ['Biotexa', PaymentMethod::Transfer, '5000.00'],
+        ['Coda', PaymentMethod::Cash, '1500.00'],
+    ]);
+    expect(bccomp(app(SupplierDebtService::class)->pending(Supplier::query()->where('name', 'Coda')->sole()), '0', 2))->toBe(1);
+    expect($owner->fresh()->password)->toBe($passwordHash);
+});
+
+test('without an owner the activity seeder leaves out the owner\'s actions', function () {
+    User::factory()->create(['role' => UserRole::Clerk]);
+    $this->seed(DemoSeeder::class);
+
+    $this->seed(DemoActivitySeeder::class);
+
+    expect(Sale::query()->where('status', SaleStatus::Canceled)->exists())->toBeFalse();
+    expect(SupplierPayment::count())->toBe(0);
+    expect(CashSession::count())->toBe(10);
 });

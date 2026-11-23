@@ -16,13 +16,17 @@ use App\Models\RefundMethod;
 use App\Models\Sale;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Models\UserRole;
 use App\Models\Warehouse;
 use App\Services\CashSessionService;
 use App\Services\CustomerPaymentService;
 use App\Services\CustomerReturnService;
 use App\Services\InventoryService;
 use App\Services\PhysicalCountService;
+use App\Services\SaleAuthorization;
 use App\Services\SaleService;
+use App\Services\SupplierDebtService;
+use App\Services\SupplierPaymentService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -38,12 +42,18 @@ use Illuminate\Support\Carbon;
  *
  *     php artisan db:seed --class=DemoSeeder && php artisan db:seed --class=DemoActivitySeeder
  *
- * Owner-only actions (cancelling sales, paying suppliers, authorizing discounts) are
- * left out: they ask for an owner's password.
+ * When there is an owner it also records what only the owner does: a discount they
+ * authorize, a cancelled sale and payments to consignment suppliers. Their real
+ * password is unknown here, so the approval is checked against a throwaway password
+ * set only on an in-memory copy of the owner; the stored password is never touched.
  */
 class DemoActivitySeeder extends Seeder
 {
+    private const string APPROVAL_PASSWORD = 'demo-approval';
+
     private User $user;
+
+    private ?User $owner = null;
 
     private Warehouse $mostrador;
 
@@ -57,6 +67,8 @@ class DemoActivitySeeder extends Seeder
         private CustomerReturnService $returns,
         private InventoryService $inventory,
         private PhysicalCountService $counts,
+        private SupplierPaymentService $supplierPayments,
+        private SupplierDebtService $supplierDebts,
     ) {}
 
     public function run(): void
@@ -68,6 +80,11 @@ class DemoActivitySeeder extends Seeder
         }
 
         $this->user = User::query()->orderBy('id')->firstOrFail();
+        $this->owner = User::query()->where('role', UserRole::Owner)->orderBy('id')->first();
+
+        if ($this->owner === null) {
+            $this->command?->warn('No hay dueño: se omiten el descuento autorizado, la cancelación y los pagos a proveedores.');
+        }
         $this->mostrador = Warehouse::query()->where('code', 'MOS')->firstOrFail();
         $this->products = Product::query()->get()->keyBy('sku')->all();
 
@@ -117,6 +134,15 @@ class DemoActivitySeeder extends Seeder
             $this->payments->register($this->user, $francisco, $reynosa, PaymentMethod::Cash, '2000');
             $this->at($day->setTime(16, 0));
             $this->cashSale([$this->line('UNI-20', 1)]);
+
+            if ($this->owner !== null) {
+                $this->at($day->setTime(17, 20));
+                $items = [$this->line('UMG-20', 1), $this->line('CAL-01', 2)];
+                $total = $this->sales->quote($items, null, '0.05')['total'];
+                $this->sales->sell($this->user, $this->mostrador, $items, [
+                    ['method' => PaymentMethod::Cash, 'amount' => $total, 'received_amount' => $total],
+                ], discountRate: '0.05', authorization: $this->approval('Cliente frecuente, compra de contado'));
+            }
         }, counted: '-100', note: 'Cambio mal entregado');
 
         // Día 3: préstamo de Francisco, pago mixto, crédito con IEPS y una devolución; sobran $20.
@@ -149,6 +175,13 @@ class DemoActivitySeeder extends Seeder
             $this->paidSale([$this->line('MRB-01', 3)], PaymentMethod::Transfer, reference: 'SPEI 88214');
             $this->at($day->setTime(15, 10));
             $this->payments->register($this->user, $ernesto, null, PaymentMethod::Transfer, '3000', 'SPEI 77102');
+
+            if ($this->owner !== null) {
+                $this->at($day->setTime(16, 40));
+                $duplicate = $this->cashSale([$this->line('BGF-01', 1)]);
+                $this->at($day->setTime(16, 55));
+                $this->sales->cancel($duplicate, $this->approval('Se cobró dos veces'));
+            }
         });
 
         // Día 5: reposición parcial del préstamo, venta de contado, devolución a la cuenta y un flete.
@@ -164,6 +197,11 @@ class DemoActivitySeeder extends Seeder
             $this->returns->register($this->user, $jalincherSale, [['sale_item_id' => $jalincherSale->items()->whereHas('product', fn ($q) => $q->where('sku', 'BGF-01'))->value('id'), 'quantity' => '1']], RefundMethod::AccountCredit, true, 'Producto dañado');
             $this->at($day->setTime(16, 20));
             $this->cash->recordMovement($this->user, CashMovementType::Outflow, 'Flete', '780', null, 'Recibo 311', category: CashMovementCategory::SupplierExpense, supplier: $supplier('Coda'));
+
+            if ($this->owner !== null) {
+                $this->at($day->setTime(17, 30));
+                $this->supplierPayments->pay($this->owner, $supplier('Biotexa'), PaymentMethod::Transfer, '5000', 'SPEI 50218', 'Abono a lo vendido');
+            }
         });
 
         // Día 6: conteo físico del mostrador (faltó un Calcio) y ventas.
@@ -200,6 +238,12 @@ class DemoActivitySeeder extends Seeder
             $this->payments->register($this->user, $francisco, $reynosa, PaymentMethod::Transfer, '5000', 'SPEI 11873');
             $this->at($day->setTime(15, 45));
             $this->cashSale([$this->line('CAL-01', 6)]);
+
+            if ($this->owner !== null) {
+                $this->at($day->setTime(18, 0));
+                $coda = Supplier::query()->where('name', 'Coda')->firstOrFail();
+                $this->supplierPayments->pay($this->owner, $coda, PaymentMethod::Cash, $this->minimum('1500', $this->supplierDebts->pending($coda)), null, 'Abono en efectivo');
+            }
         });
 
         // Día 9: ventas normales.
@@ -239,6 +283,22 @@ class DemoActivitySeeder extends Seeder
         $countedCash = bcadd($this->cash->expectedCash($this->cash->current()), $counted ?? '0', 2);
         $cashLeft = bccomp($countedCash, '1000', 2) < 0 ? $countedCash : '1000';
         $this->cash->close($this->user, $countedCash, $cashLeft, $note);
+    }
+
+    /**
+     * The owner's approval, checked against a throwaway password set only on an
+     * in-memory copy (see the class comment); nothing is saved on the user.
+     */
+    private function approval(string $reason): SaleAuthorization
+    {
+        $approver = (clone $this->owner)->forceFill(['password' => self::APPROVAL_PASSWORD]);
+
+        return new SaleAuthorization($approver, self::APPROVAL_PASSWORD, $reason);
+    }
+
+    private function minimum(string $first, string $second): string
+    {
+        return bccomp($first, $second, 2) <= 0 ? $first : $second;
     }
 
     private function at(CarbonImmutable $moment): void
